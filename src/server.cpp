@@ -9,6 +9,7 @@
 #include <random>
 #include <cpen333/process/shared_memory.h>
 #include <cpen333/process/mutex.h>
+#include <map>
 
 void load_maze(const std::string& filename, MazeInfo& minfo) {
 
@@ -57,7 +58,39 @@ void init_runners(const MazeInfo& minfo, RunnerInfo& rinfo) {
     rinfo.rloc[i][ROW_IDX] = 18;
   }
 }
+void print_menu() {
 
+  safe_printf("=========================================\n");
+  safe_printf("=                  MENU                 =\n");
+  safe_printf("=========================================\n");
+  safe_printf(" 1. Add item\n");
+  safe_printf(" 2. Quit\n");
+  safe_printf("=========================================\n");
+  safe_printf("Enter number: ");
+}
+int end_col, end_row;
+void get_end(){
+  std::string col, row;
+  safe_printf("Col: ");
+  std::getline(std::cin,col);
+  end_col = std::stoi(col);
+  safe_printf("\nRow: ");
+  std::getline(std::cin,row);
+  end_row = std::stoi(row);
+}
+
+void find_shelves(std::vector<std::pair<int,int>>& shelves, MazeInfo& minfo){
+  for(int r = 0; r<minfo.rows;r++){
+    for(int c = 0; c<minfo.cols;c++){
+      if(minfo.maze[c][r] == SHELF_CHAR){
+        if(c > 0 && minfo.maze[c-1][r] == EMPTY_CHAR) shelves.push_back({c-1,r});
+        else if(c < minfo.cols && minfo.maze[c+1][r] == EMPTY_CHAR) shelves.push_back({c+1,r});
+        else if(r > 0 && minfo.maze[c][r-1] == EMPTY_CHAR) shelves.push_back({c,r-1});
+        else if(r < minfo.rows && minfo.maze[c][r+1] == EMPTY_CHAR) shelves.push_back({c,r+1});
+      }
+    }
+  }
+}
 /**
  * Main function to run the restaurant
  * @return
@@ -81,7 +114,14 @@ int main(int argc, char* argv[]) {
     memory->quit = 0;
     memory->magic = MAGIC;
   }
+  std::vector<std::pair<int,int>> shelves;
+  find_shelves(shelves,memory->minfo);
+  std::map<std::pair<int,int>,int> inventory;
+  std::map<std::pair<int,int>,int>::iterator it;
 
+  for(auto shelf:shelves) {
+    std::cout << shelf.first << " " << shelf.second << std::endl;
+  }
   // bunch of robots, clients and servers
   std::vector<Robot*> robots;
   std::vector<Client*> clients;
@@ -93,19 +133,44 @@ int main(int argc, char* argv[]) {
   for (int i=0; i<nrobots; ++i) {
     robots.push_back(new Robot(i, order_queue, serve_queue));
   }
-  for (int i=0; i<nclients; ++i) {
-    clients.push_back(new Client(i, order_queue));
-  }
+
   // start everyone
-  for (auto& chef : robots) {
-    chef->start();
+  for (auto& robot : robots) {
+    robot->start();
   }
-  for (auto& client : clients) {
-    client->start();
+
+  bool quit = false;
+  while(!quit){
+    char cmd;
+    int home_col = 1;
+    int home_row = 18;
+    while(!quit){
+      print_menu();
+      std::cin >> cmd;
+      std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
+      switch(cmd) {
+        case '1':
+          //get_end();
+          for(auto shelf:shelves){
+            it = inventory.find(shelf);
+            if(it == inventory.end()){
+              end_col = shelf.first;
+              end_row = shelf.second;
+              inventory[shelf] = 1;
+              break;
+            }
+          }
+          order_queue.add({end_row,end_col});
+          break;
+        case '2':
+          quit = true;
+          break;
+        default:
+          safe_printf("Invalid cmd entered\n");
+      }
+    }
   }
-  for (auto& client : clients) {
-    client->join();
-  }
+
   safe_printf("Client done\n");
   for(int i=0;i<nrobots;i++){
     order_queue.add({999,999});

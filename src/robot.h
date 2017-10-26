@@ -76,7 +76,7 @@ class Robot : public cpen333::thread::thread_object {
   }
   int go(int col, int row) {
     if (memory_->quit) return -1;
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       memory_->rinfo.rloc[idx_][COL_IDX] = col;
@@ -96,23 +96,23 @@ class Robot : public cpen333::thread::thread_object {
       return true;
     }
     // Recursively search for our goal.
-    if (col > 0 && minfo_.maze[col - 1][row] != WALL_CHAR && minfo_.visited[col - 1][row] == 0 && this->go(col - 1, row)) {
+    if (col > 0 && (minfo_.maze[col - 1][row] != WALL_CHAR && minfo_.maze[col - 1][row] != SHELF_CHAR) && minfo_.visited[col - 1][row] == 0 && this->go(col - 1, row)) {
       return true;
     }
-    if (col < minfo_.cols && minfo_.maze[col + 1][row] != WALL_CHAR && minfo_.visited[col + 1][row] == 0 && this->go(col + 1, row)) {
+    if (col < minfo_.cols && (minfo_.maze[col + 1][row] != WALL_CHAR && minfo_.maze[col + 1][row] != SHELF_CHAR) && minfo_.visited[col + 1][row] == 0 && this->go(col + 1, row)) {
       return true;
     }
-    if (row > 0 && minfo_.maze[col][row - 1] != WALL_CHAR && minfo_.visited[col][row - 1] == 0 && this->go(col, row - 1)) {
+    if (row > 0 && (minfo_.maze[col][row - 1] != WALL_CHAR && minfo_.maze[col][row - 1] != SHELF_CHAR) && minfo_.visited[col][row - 1] == 0 && this->go(col, row - 1)) {
       return true;
     }
-    if (row < minfo_.rows && minfo_.maze[col][row + 1] != WALL_CHAR && minfo_.visited[col][row + 1] == 0 && this->go(col, row + 1)) {
+    if (row < minfo_.rows && (minfo_.maze[col][row + 1] != WALL_CHAR && minfo_.maze[col][row + 1] != SHELF_CHAR) && minfo_.visited[col][row + 1] == 0 && this->go(col, row + 1)) {
       return true;
     }
 
     // Otherwise we need to backtrack and find another solution.
     minfo_.visited[col][row] = 0;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     return false;
   }
   int id() {

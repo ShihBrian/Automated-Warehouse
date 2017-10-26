@@ -66,6 +66,7 @@ public:
     static const char WALL = 219;  // WALL character
     static const char EXIT = 176;  // EXIT character
     static const char HOME = 72;  // EXIT character
+    static const char SHELF = 83;
     MazeInfo& minfo = memory_->minfo;
     RunnerInfo& rinfo = memory_->rinfo;
 
@@ -84,6 +85,9 @@ public:
         }
         else if (ch == HOME_CHAR){
           std::printf("%c", HOME);
+        }
+        else if(ch == SHELF_CHAR){
+          std::printf("%c", SHELF);
         }
         else {
           std::printf("%c", EMPTY_CHAR);

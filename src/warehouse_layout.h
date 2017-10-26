@@ -9,6 +9,7 @@
 #define EXIT_CHAR 'E'
 #define VISITED_CHAR 'V'
 #define HOME_CHAR 'H'
+#define SHELF_CHAR 'S'
 
 #define COL_IDX 0
 #define ROW_IDX 1
