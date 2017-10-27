@@ -10,6 +10,9 @@
 #include <cpen333/process/shared_memory.h>
 #include <cpen333/process/mutex.h>
 #include <map>
+#include <cpen333/process/socket.h>
+
+int end_col, end_row;
 
 void load_maze(const std::string& filename, MazeInfo& minfo) {
 
@@ -44,12 +47,6 @@ void load_maze(const std::string& filename, MazeInfo& minfo) {
 
 }
 
-/**
- * Randomly places all possible maze runners on an empty
- * square in the maze
- * @param minfo maze input
- * @param rinfo runner info to populate
- */
 void init_runners(const MazeInfo& minfo, RunnerInfo& rinfo) {
   rinfo.nrunners = 0;
   // fill in random placements for future runners
@@ -57,26 +54,6 @@ void init_runners(const MazeInfo& minfo, RunnerInfo& rinfo) {
     rinfo.rloc[i][COL_IDX] = 1;
     rinfo.rloc[i][ROW_IDX] = 18;
   }
-}
-void print_menu() {
-
-  safe_printf("=========================================\n");
-  safe_printf("=                  MENU                 =\n");
-  safe_printf("=========================================\n");
-  safe_printf(" 1. Add item\n");
-  safe_printf(" 2. Quit\n");
-  safe_printf("=========================================\n");
-  safe_printf("Enter number: ");
-}
-int end_col, end_row;
-void get_end(){
-  std::string col, row;
-  safe_printf("Col: ");
-  std::getline(std::cin,col);
-  end_col = std::stoi(col);
-  safe_printf("\nRow: ");
-  std::getline(std::cin,row);
-  end_row = std::stoi(row);
 }
 
 void find_shelves(std::vector<std::pair<int,int>>& shelves, MazeInfo& minfo){
@@ -91,42 +68,58 @@ void find_shelves(std::vector<std::pair<int,int>>& shelves, MazeInfo& minfo){
     }
   }
 }
-/**
- * Main function to run the restaurant
- * @return
- */
-int main(int argc, char* argv[]) {
+
+
+void service(OrderQueue& order, cpen333::process::socket client, int id){
+  cpen333::process::mutex mutex("Mutex");
+  std::cout << "Client " << id << " connected" << std::endl;
+  bool valid = true;
+  char msg_type;
+  while(valid) {
+    if (!client.read_all(&msg_type, 1)) {
+      valid = false;
+      break;
+    }
+    safe_printf("Received msg type %c\n", msg_type);
+
+    switch(msg_type){
+      case '1':
+        safe_printf("Add\n");
+        break;
+      case '2':
+        safe_printf("Remove\n");
+        break;
+
+    }
+  }
+}
+
+
+int main() {
   // read maze from command-line, default to maze0
   std::string maze = MAZE_NAME;
-  if (argc > 1) {
-    maze = argv[1];
-  }
+
   cpen333::process::shared_object<SharedData> memory(MAZE_MEMORY_NAME);
   cpen333::process::mutex mutex1(MAZE_MUTEX_NAME);
   MazeInfo info;
   RunnerInfo runners;
   load_maze(maze, info);
   init_runners(info, runners);
-  {
-    std::lock_guard<decltype(mutex1)> lock(mutex1);
-    memory->minfo = info;
-    memory->rinfo = runners;
-    memory->quit = 0;
-    memory->magic = MAGIC;
-  }
+
+  memory->minfo = info;
+  memory->rinfo = runners;
+  memory->quit = 0;
+  memory->magic = MAGIC;
+
   std::vector<std::pair<int,int>> shelves;
   find_shelves(shelves,memory->minfo);
   std::map<std::pair<int,int>,int> inventory;
   std::map<std::pair<int,int>,int>::iterator it;
 
-  for(auto shelf:shelves) {
-    std::cout << shelf.first << " " << shelf.second << std::endl;
-  }
-  // bunch of robots, clients and servers
   std::vector<Robot*> robots;
   std::vector<Client*> clients;
   const int nrobots = 4;
-  const int nclients = 1;
+
   CircularOrderQueue order_queue;
   CircularOrderQueue serve_queue;
 
@@ -139,6 +132,21 @@ int main(int argc, char* argv[]) {
     robot->start();
   }
 
+  cpen333::process::socket_server server(55555);
+  server.open();
+  std::cout << "Server started on port " << server.port() << std::endl;
+
+  cpen333::process::socket client;
+  size_t count = 0;
+
+  while(server.accept(client)){
+    std::thread thread(service,std::ref(order_queue),std::move(client),count);
+    thread.detach();
+    count++;
+  }
+
+  server.close();
+/*
   bool quit = false;
   while(!quit){
     char cmd;
@@ -170,7 +178,7 @@ int main(int argc, char* argv[]) {
       }
     }
   }
-
+*/
   safe_printf("Client done\n");
   for(int i=0;i<nrobots;i++){
     order_queue.add({999,999});
@@ -179,7 +187,6 @@ int main(int argc, char* argv[]) {
     robot->join();
   }
   safe_printf("Robots done\n");
-
 
   // free all memory
   for (auto& client : clients) {

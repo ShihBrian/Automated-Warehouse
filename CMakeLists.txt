@@ -23,8 +23,21 @@ target_link_libraries(warehouse_ui Threads::Threads)
 set(SERVER_HEADERS src/Order.h src/CircularOrderQueue.h
         src/client.h src/OrderQueue.h src/robot.h)
 
+add_executable(client src/client.cpp)
+target_link_libraries(client Threads::Threads)
 #=================================================================
 #  Restauranat
 #=================================================================
 add_executable(server src/server.cpp ${SERVER_HEADERS})
 target_link_libraries(server Threads::Threads)
+
+# link with unix realtime library
+if(UNIX AND NOT APPLE)
+    target_link_libraries(server rt)
+    target_link_libraries(client rt)
+endif()
+
+if(WIN32)
+    target_link_libraries(client wsock32 ws2_32)
+    target_link_libraries(server wsock32 ws2_32)
+endif()
