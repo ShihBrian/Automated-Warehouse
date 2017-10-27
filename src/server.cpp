@@ -117,7 +117,6 @@ int main() {
   std::map<std::pair<int,int>,int>::iterator it;
 
   std::vector<Robot*> robots;
-  std::vector<Client*> clients;
   const int nrobots = 4;
 
   CircularOrderQueue order_queue;
@@ -179,7 +178,6 @@ int main() {
     }
   }
 */
-  safe_printf("Client done\n");
   for(int i=0;i<nrobots;i++){
     order_queue.add({999,999});
   }
@@ -188,11 +186,6 @@ int main() {
   }
   safe_printf("Robots done\n");
 
-  // free all memory
-  for (auto& client : clients) {
-    delete client;
-    client = nullptr;
-  }
   for (auto& robot : robots) {
     delete robot;
     robot = nullptr;
