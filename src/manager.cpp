@@ -1,5 +1,5 @@
+#include "Order.h"
 #include "client.h"
-
 
 int create_order(std::vector<Order_item>& Orders){
   Order_item order;
@@ -81,8 +81,8 @@ void send_type(cpen333::process::socket& socket,MessageType type){
   char start = START_BYTE;
   socket.write(&start,1);
   switch(type){
-    case MSG_OUTBOUND:
-      buff[0] = MSG_OUTBOUND;
+    case MSG_INBOUND:
+      buff[0] = MSG_INBOUND;
       socket.write(buff,1);
       break;
     case MSG_ITEM:
@@ -112,11 +112,11 @@ void send_size(cpen333::process::socket& socket, size_t size){
   socket.write(size_buff,4);
 }
 
-void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket){
+void send_order(std::vector<Order_item>& Orders,cpen333::process::socket&){
   const char* str;
   char success;
   size_t length;
-  send_type(socket,MSG_OUTBOUND);
+  send_type(socket,MSG_INBOUND);
 
   size_t num_items = Orders.size();
   send_size(socket, num_items);
@@ -163,7 +163,7 @@ int main(){
   Orders.push_back(order);
 
   while(!quit){
-    print_menu_customer();
+    print_menu_manager();
     std::cin >> cmd;
     std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
     switch(cmd){

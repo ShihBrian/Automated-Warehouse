@@ -22,16 +22,33 @@ enum PRODUCT{
   DONE
 };
 
-void print_menu() {
+void print_menu_customer() {
   std::cout << std::endl;
   std::cout << "=========================================" << std::endl;
-  std::cout << "=                ACTIONS                =" << std::endl;
+  std::cout << "=                  BUY                  =" << std::endl;
   std::cout << "=========================================" << std::endl;
   std::cout << " (1) Create Order" << std::endl;
   std::cout << " (2) Edit Order" << std::endl;
   std::cout << " (3) Print Order" << std::endl;
   std::cout << " (4) Send Order" << std::endl;
   std::cout << " (5) Quit"  << std::endl;
+  std::cout << "=========================================" << std::endl;
+  std::cout << "Enter number: ";
+  std::cout.flush();
+}
+
+void print_menu_manager() {
+  std::cout << std::endl;
+  std::cout << "=========================================" << std::endl;
+  std::cout << "=               WAREHOUSE               =" << std::endl;
+  std::cout << "=========================================" << std::endl;
+  std::cout << " (1) Create Restock Order" << std::endl;
+  std::cout << " (2) Edit Order" << std::endl;
+  std::cout << " (3) Print Order" << std::endl;
+  std::cout << " (4) View Inventory" << std::endl;
+  std::cout << " (5) View Order Status" << std::endl;
+  std::cout << " (6) Send Order" << std::endl;
+  std::cout << " (7) Quit"  << std::endl;
   std::cout << "=========================================" << std::endl;
   std::cout << "Enter number: ";
   std::cout.flush();
