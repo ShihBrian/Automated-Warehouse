@@ -1,99 +1,63 @@
-#include "robot.h"
-#include "DynamicOrderQueue.h"
-#include "CircularOrderQueue.h"
-#include "client.h"
-#include "warehouse_layout.h"
-#include <string>
-#include <fstream>
-#include <thread>
-#include <random>
-#include <cpen333/process/shared_memory.h>
-#include <cpen333/process/mutex.h>
-#include <map>
-#include <cpen333/process/socket.h>
 
-int end_col, end_row;
+#include "server.h"
 
-void load_maze(const std::string& filename, MazeInfo& minfo) {
-
-  // initialize number of rows and columns
-  minfo.rows = 0;
-  minfo.cols = 0;
-
-  std::ifstream fin(filename);
-  std::string line;
-
-  // read maze file
-  if (fin.is_open()) {
-    int row = 0;  // zeroeth row
-    while (std::getline(fin, line)) {
-      int cols = line.length();
-      if (cols > 0) {
-        // longest row defines columns
-        if (cols > minfo.cols) {
-          minfo.cols = cols;
-        }
-        for (size_t col=0; col<cols; ++col) {
-          minfo.maze[col][row] = line[col];
-          minfo.visited[col][row] = 0;
-        }
-        ++row;
-      }
-    }
-    minfo.rows = row;
-    fin.close();
-  }
-  else printf("Unable to open file\n");
-
+int get_size(cpen333::process::socket& client){
+  char size_buff[4];
+  client.read_all(size_buff, 4);
+  return (size_buff[0] << 24) | (size_buff[1] << 16) | (size_buff[2] << 8) | (size_buff[3] & 0xFF);
 }
 
-void init_runners(const MazeInfo& minfo, RunnerInfo& rinfo) {
-  rinfo.nrunners = 0;
-  // fill in random placements for future runners
-  for (size_t i=0; i<MAX_RUNNERS; ++i) {
-    rinfo.rloc[i][COL_IDX] = 1;
-    rinfo.rloc[i][ROW_IDX] = 18;
-  }
-}
-
-void find_shelves(std::vector<std::pair<int,int>>& shelves, MazeInfo& minfo){
-  for(int r = 0; r<minfo.rows;r++){
-    for(int c = 0; c<minfo.cols;c++){
-      if(minfo.maze[c][r] == SHELF_CHAR){
-        if(c > 0 && minfo.maze[c-1][r] == EMPTY_CHAR) shelves.push_back({c-1,r});
-        else if(c < minfo.cols && minfo.maze[c+1][r] == EMPTY_CHAR) shelves.push_back({c+1,r});
-        else if(r > 0 && minfo.maze[c][r-1] == EMPTY_CHAR) shelves.push_back({c,r-1});
-        else if(r < minfo.rows && minfo.maze[c][r+1] == EMPTY_CHAR) shelves.push_back({c,r+1});
-      }
-    }
-  }
-}
-
-
-void service(OrderQueue& order, cpen333::process::socket client, int id){
-  cpen333::process::mutex mutex("Mutex");
+void service(OrderQueue& orders, cpen333::process::socket client, int id){
+  std::vector<Order_item> temp_Orders;
+  std::vector<Order_item> Orders;
+  Order_item order;
   std::cout << "Client " << id << " connected" << std::endl;
-  bool valid = true;
-  char msg_type;
-  while(valid) {
-    if (!client.read_all(&msg_type, 1)) {
-      valid = false;
-      break;
-    }
-    safe_printf("Received msg type %c\n", msg_type);
+  bool quit = false;
+  char msg;
+  int order_size;
+  int str_size;
+  char buff[256];
+  std::string product;
+  while(!quit) {
+    client.read_all(&msg, 1);
+    if(msg==START_BYTE) {
+      client.read_all(&msg, 1);
+      int type = msg & 0xFF;
+      switch (type) {
+        case MSG_ORDER:
+          order_size = get_size(client);
+          safe_printf("Order size: %d\n",order_size);
+          break;
+        case MSG_ADD:
+          safe_printf("Add\n");
+          break;
+        case MSG_ITEM:
+          order_size--;
+          order.quantity = get_size(client);
+          str_size = get_size(client);
+          client.read_all(buff,str_size);
+          product = buff;
+          order.product = product;
+          temp_Orders.push_back(order);
+          break;
+        case MSG_END:
+          if(order_size == 0){
+            safe_printf("Order successfully received\n");
+            Orders = temp_Orders;
+            temp_Orders.clear();
+          }
+          else{
+            safe_printf("Order was not received\n");
+          }
+          break;
+        case MSG_QUIT:
+          quit = true;
+          break;
 
-    switch(msg_type){
-      case '1':
-        safe_printf("Add\n");
-        break;
-      case '2':
-        safe_printf("Remove\n");
-        break;
-
+      }
     }
   }
 }
-
 
 int main() {
   // read maze from command-line, default to maze0
@@ -145,39 +109,7 @@ int main() {
   }
 
   server.close();
-/*
-  bool quit = false;
-  while(!quit){
-    char cmd;
-    int home_col = 1;
-    int home_row = 18;
-    while(!quit){
-      print_menu();
-      std::cin >> cmd;
-      std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
-      switch(cmd) {
-        case '1':
-          //get_end();
-          for(auto shelf:shelves){
-            it = inventory.find(shelf);
-            if(it == inventory.end()){
-              end_col = shelf.first;
-              end_row = shelf.second;
-              inventory[shelf] = 1;
-              break;
-            }
-          }
-          order_queue.add({end_row,end_col});
-          break;
-        case '2':
-          quit = true;
-          break;
-        default:
-          safe_printf("Invalid cmd entered\n");
-      }
-    }
-  }
-*/
+
   for(int i=0;i<nrobots;i++){
     order_queue.add({999,999});
   }

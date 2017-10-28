@@ -21,7 +21,7 @@ add_executable(warehouse_ui src/warehouse_ui.cpp)
 target_link_libraries(warehouse_ui Threads::Threads)
 
 set(SERVER_HEADERS src/Order.h src/CircularOrderQueue.h
-        src/client.h src/OrderQueue.h src/robot.h)
+        src/client.h src/OrderQueue.h src/robot.h src/server.h)
 
 add_executable(client src/client.cpp)
 target_link_libraries(client Threads::Threads)

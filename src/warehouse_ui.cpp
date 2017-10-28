@@ -113,7 +113,7 @@ public:
 
     // draw all runner locations
     for (size_t i = 0; i<rinfo.nrunners; ++i) {
-      char me = 'A' + i;
+      char me = '*';
       int newc;
       int newr;
 
@@ -185,7 +185,8 @@ int main() {
   // continue looping until main program has quit
   while (!ui.quit()) {
     ui.draw_runners();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ui.draw_maze();
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
   }
 
   return 0;

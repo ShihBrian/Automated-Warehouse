@@ -42,9 +42,11 @@ class CircularOrderQueue : public virtual OrderQueue {
     //==================================================
     producer_.wait();
     int pidx;
+    pmutex_.lock();
     pidx = pidx_;
     // update producer index
     pidx_ = (pidx_+1)%CIRCULAR_BUFF_SIZE;
+    pmutex_.unlock();
     buff_[pidx] = order;
     consumer_.notify();
   }
@@ -60,9 +62,11 @@ class CircularOrderQueue : public virtual OrderQueue {
     //==================================================
     consumer_.wait();
     int cidx;
+    cmutex_.lock();
     cidx = cidx_;
     // update consumer index
     cidx_ = (cidx_+1)%CIRCULAR_BUFF_SIZE;
+    cmutex_.unlock();
     Order out = buff_[cidx];
     producer_.notify();
     return out;

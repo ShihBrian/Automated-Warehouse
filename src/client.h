@@ -12,6 +12,8 @@
 
 std::vector<std::string> product_names = {"","Apples","Bananas","Grapes","Pears","Watermelons"};
 
+static const char START_BYTE = 0xEE;
+
 enum PRODUCT{
   APPLES = 1,
   BANANAS,

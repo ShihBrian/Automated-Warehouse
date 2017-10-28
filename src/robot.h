@@ -111,6 +111,11 @@ class Robot : public cpen333::thread::thread_object {
 
     // Otherwise we need to backtrack and find another solution.
     minfo_.visited[col][row] = 0;
+    {
+      std::lock_guard<decltype(mutex_)> lock(mutex_);
+      memory_->rinfo.rloc[idx_][COL_IDX] = col;
+      memory_->rinfo.rloc[idx_][ROW_IDX] = row;
+    }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     return false;
@@ -133,7 +138,6 @@ class Robot : public cpen333::thread::thread_object {
     }
     int x = this->get_start_col();
     int y = this->get_start_row();
-    safe_printf("Robot %d started\n", id_);
 
     Order order = orders_.get();
     while (true) {
