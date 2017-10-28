@@ -1,24 +1,19 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <cpen333/process/socket.h>
 #include <fstream>
 #include <thread>
 #include <random>
 #include <cpen333/process/shared_memory.h>
 #include <cpen333/process/mutex.h>
 #include <map>
-#include <cpen333/process/socket.h>
 #include "robot.h"
-#include "DynamicOrderQueue.h"
 #include "CircularOrderQueue.h"
-#include "client.h"
 #include "warehouse_layout.h"
 
-int end_col, end_row;
 
-static const char START_BYTE = 0xEE;
-static const char SUCCESS_BYTE = 0xFF;
-static const char FAIL_BYTE = 0xFE;
+int end_col, end_row;
 
 void load_maze(const std::string& filename, MazeInfo& minfo) {
 
@@ -75,14 +70,5 @@ void find_shelves(std::vector<std::pair<int,int>>& shelves, MazeInfo& minfo){
     }
   }
 }
-
-enum MessageType {
-  MSG_INBOUND,
-  MSG_OUTBOUND,
-  MSG_ORDER,
-  MSG_ITEM,
-  MSG_END,
-  MSG_QUIT
-};
 
 #endif //SERVER_H

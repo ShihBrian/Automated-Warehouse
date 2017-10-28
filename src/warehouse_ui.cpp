@@ -10,10 +10,6 @@
 /**
 * Handles all drawing/memory synchronization for the
 * User Interface process
-* ====================================================
-*  TODO: ADD ANY NECESSARY MUTUAL EXCLUSION
-* ====================================================
-*
 */
 class MazeUI {
   // display offset for better visibility

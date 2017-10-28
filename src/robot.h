@@ -5,7 +5,6 @@
 #include <iostream>
 #include <thread>
 
-#include "Order.h"
 #include "OrderQueue.h"
 #include "safe_printf.h"
 #include "warehouse_layout.h"

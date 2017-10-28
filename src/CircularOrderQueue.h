@@ -32,14 +32,6 @@ class CircularOrderQueue : public virtual OrderQueue {
       pmutex_(), cmutex_(), pidx_(0), cidx_(0){}
 
   void add(const Order& order) {
-
-    //==================================================
-    // TODO: Safely add item to "queue"
-    //    - wait for empty slot
-    //    - safely acquire and increment producer index
-    //    - fill slot
-    //    - notify others of item availability
-    //==================================================
     producer_.wait();
     int pidx;
     pmutex_.lock();
@@ -52,14 +44,6 @@ class CircularOrderQueue : public virtual OrderQueue {
   }
 
   Order get() {
-
-    //==================================================
-    // TODO: Safely remove item from "queue"
-    //    - wait for next filled slot
-    //    - safely acquire and increment consumer index
-    //    - remove item from slot
-    //    - notify others of slot availability
-    //==================================================
     consumer_.wait();
     int cidx;
     cmutex_.lock();

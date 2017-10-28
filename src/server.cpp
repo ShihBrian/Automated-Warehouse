@@ -1,5 +1,6 @@
 #include "server.h"
-
+#include "Order.h"
+#include "comm.h"
 int get_size(cpen333::process::socket& client){
   char size_buff[4];
   client.read_all(size_buff, 4);
@@ -12,7 +13,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
   Order_item order;
   std::cout << "Client " << id << " connected" << std::endl;
   bool quit = false;
-  bool inbound = false;
+  bool customer = false;
   char msg;
   int order_size;
   int str_size;
@@ -24,13 +25,12 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
       client.read_all(&msg, 1);
       int type = msg & 0xFF;
       switch (type) {
-        case MSG_OUTBOUND:
-          inbound = false;
+        case MSG_CUSTOMER:
+          customer = true;
           order_size = get_size(client);
-          safe_printf("Order size: %d\n",order_size);
           break;
-        case MSG_INBOUND:
-          inbound = true;
+        case MSG_MANAGER:
+          customer = false;
           order_size = get_size(client);
           break;
         case MSG_ITEM:
@@ -48,6 +48,9 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
             Orders = temp_Orders;
             temp_Orders.clear();
             client.write(&SUCCESS_BYTE,1);
+            for(auto& order:Orders){
+              std::cout << order.product << " : " << order.quantity << std::endl;
+            }
           }
           else{
             temp_Orders.clear();
@@ -91,6 +94,7 @@ int main() {
   CircularOrderQueue order_queue;
   CircularOrderQueue serve_queue;
 
+  //TODO: Add or remove robots dynamically
   for (int i=0; i<nrobots; ++i) {
     robots.push_back(new Robot(i, order_queue, serve_queue));
   }

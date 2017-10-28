@@ -1,8 +1,10 @@
-#ifndef LAB6_QUEUE_H
-#define LAB6_QUEUE_H
+#ifndef QUEUE_H
+#define QUEUE_H
 
-#include "Order.h"
-
+struct Order {
+  int row;
+  int col;
+};
 /**
  * Thread-safe queue of items
  */
@@ -22,4 +24,4 @@ class OrderQueue {
 
 };
 
-#endif //LAB6_QUEUE_H
+#endif //QUEUE_H

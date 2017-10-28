@@ -34,12 +34,6 @@ class DynamicOrderQueue : public virtual OrderQueue {
   }
 
   Order get() {
-
-    //==================================================
-    // TODO: Safely remove item from "queue"
-    //    - wait until internal queue is non-empty
-    //    - safely acquire item from internal queue
-    //==================================================
     {
       std::unique_lock<decltype(mutex_)> lock(mutex_);
       while(!ready) {
