@@ -1,4 +1,3 @@
-
 #include "server.h"
 
 int get_size(cpen333::process::socket& client){
@@ -13,6 +12,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
   Order_item order;
   std::cout << "Client " << id << " connected" << std::endl;
   bool quit = false;
+  bool inbound = false;
   char msg;
   int order_size;
   int str_size;
@@ -24,12 +24,14 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
       client.read_all(&msg, 1);
       int type = msg & 0xFF;
       switch (type) {
-        case MSG_ORDER:
+        case MSG_OUTBOUND:
+          inbound = false;
           order_size = get_size(client);
           safe_printf("Order size: %d\n",order_size);
           break;
-        case MSG_ADD:
-          safe_printf("Add\n");
+        case MSG_INBOUND:
+          inbound = true;
+          order_size = get_size(client);
           break;
         case MSG_ITEM:
           order_size--;
@@ -45,9 +47,12 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
             safe_printf("Order successfully received\n");
             Orders = temp_Orders;
             temp_Orders.clear();
+            client.write(&SUCCESS_BYTE,1);
           }
           else{
+            temp_Orders.clear();
             safe_printf("Order was not received\n");
+            client.write(&FAIL_BYTE,1);
           }
           break;
         case MSG_QUIT:

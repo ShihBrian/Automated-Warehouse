@@ -16,6 +16,10 @@
 
 int end_col, end_row;
 
+static const char START_BYTE = 0xEE;
+static const char SUCCESS_BYTE = 0xFF;
+static const char FAIL_BYTE = 0xFE;
+
 void load_maze(const std::string& filename, MazeInfo& minfo) {
 
   // initialize number of rows and columns
@@ -73,8 +77,8 @@ void find_shelves(std::vector<std::pair<int,int>>& shelves, MazeInfo& minfo){
 }
 
 enum MessageType {
-  MSG_ADD,
-  MSG_REMOVE,
+  MSG_INBOUND,
+  MSG_OUTBOUND,
   MSG_ORDER,
   MSG_ITEM,
   MSG_END,

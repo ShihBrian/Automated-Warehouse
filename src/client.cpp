@@ -1,5 +1,5 @@
 #include "client.h"
-#include "server.h"
+
 
 int create_order(std::vector<Order_item>& Orders){
   Order_item order;
@@ -81,12 +81,8 @@ void send_type(cpen333::process::socket& socket,MessageType type){
   char start = START_BYTE;
   socket.write(&start,1);
   switch(type){
-    case MSG_ORDER:
-      buff[0] = MSG_ORDER;
-      socket.write(buff,1);
-      break;
-    case MSG_ADD:
-      buff[0] = MSG_ADD;
+    case MSG_OUTBOUND:
+      buff[0] = MSG_OUTBOUND;
       socket.write(buff,1);
       break;
     case MSG_ITEM:
@@ -118,8 +114,9 @@ void send_size(cpen333::process::socket& socket, size_t size){
 
 void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket){
   const char* str;
+  char success;
   size_t length;
-  send_type(socket,MSG_ORDER);
+  send_type(socket,MSG_OUTBOUND);
 
   size_t num_items = Orders.size();
   send_size(socket, num_items);
@@ -134,6 +131,14 @@ void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket
     socket.write(str,length);
   }
   send_type(socket,MSG_END);
+
+  socket.read_all(&success, 1);
+  if(success==SUCCESS_BYTE){
+    Orders.clear();
+    std::cout << "Server received order\n";
+  }
+  else if(success==FAIL_BYTE) std::cout << "Server FAILED to receive order\n";
+  else std::cout << "Unknown response\n";
 }
 
 int main(){
@@ -173,7 +178,6 @@ int main(){
         break;
       case SEND:
         send_order(Orders,socket);
-        Orders.clear();
         break;
       case QUIT:
         quit = true;

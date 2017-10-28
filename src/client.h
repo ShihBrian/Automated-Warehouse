@@ -3,6 +3,7 @@
 
 #include <cpen333/process/socket.h>
 #include <limits>
+#include "server.h"
 
 #define CREATE '1'
 #define EDIT '2'
@@ -11,8 +12,6 @@
 #define QUIT '5'
 
 std::vector<std::string> product_names = {"","Apples","Bananas","Grapes","Pears","Watermelons"};
-
-static const char START_BYTE = 0xEE;
 
 enum PRODUCT{
   APPLES = 1,
