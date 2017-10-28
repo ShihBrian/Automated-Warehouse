@@ -58,17 +58,4 @@ void init_runners(const MazeInfo& minfo, RunnerInfo& rinfo) {
   }
 }
 
-void find_shelves(std::vector<std::pair<int,int>>& shelves, MazeInfo& minfo){
-  for(int r = 0; r<minfo.rows;r++){
-    for(int c = 0; c<minfo.cols;c++){
-      if(minfo.maze[c][r] == SHELF_CHAR){
-        if(c > 0 && minfo.maze[c-1][r] == EMPTY_CHAR) shelves.push_back({c-1,r});
-        else if(c < minfo.cols && minfo.maze[c+1][r] == EMPTY_CHAR) shelves.push_back({c+1,r});
-        else if(r > 0 && minfo.maze[c][r-1] == EMPTY_CHAR) shelves.push_back({c,r-1});
-        else if(r < minfo.rows && minfo.maze[c][r+1] == EMPTY_CHAR) shelves.push_back({c,r+1});
-      }
-    }
-  }
-}
-
 #endif //SERVER_H

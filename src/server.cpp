@@ -1,19 +1,48 @@
 #include "server.h"
 #include "Order.h"
 #include "comm.h"
+#include "inventory.h"
+
+std::vector<std::pair<int,int>> shelves;
+std::map<std::pair<int,int>,int> inventory;
+std::map<std::pair<int,int>,int>::iterator it;
+
 int get_size(cpen333::process::socket& client){
   char size_buff[4];
   client.read_all(size_buff, 4);
   return (size_buff[0] << 24) | (size_buff[1] << 16) | (size_buff[2] << 8) | (size_buff[3] & 0xFF);
 }
 
-void service(OrderQueue& orders, cpen333::process::socket client, int id){
+//TODO: add thread safety
+void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& inv, bool add) {
+  int col, row;
+  //if removing stock and there is enough
+  if (!add) {
+    if (inv.check_stock(Orders)) {
+      for (auto &order:Orders) {
+        inv.find_product(col, row, order.product);
+        queue.add({row, col});
+      }
+      inv.update_inv(Orders, add);
+    }
+    else std::cout << "Not enough stock" << std::endl;
+  } else { //restocking
+    for (auto &order:Orders) {
+      inv.get_available_shelf(col, row, order);
+      queue.add({row, col});
+    }
+    inv.update_inv(Orders, add);
+  }
+}
+
+//TODO: Make switch into FSM
+void service(OrderQueue& orders, cpen333::process::socket client, int id, Inventory& inv){
   std::vector<Order_item> temp_Orders;
   std::vector<Order_item> Orders;
   Order_item order;
   std::cout << "Client " << id << " connected" << std::endl;
   bool quit = false;
-  bool customer = false;
+  bool add = false;
   char msg;
   int order_size;
   int str_size;
@@ -26,11 +55,11 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
       int type = msg & 0xFF;
       switch (type) {
         case MSG_CUSTOMER:
-          customer = true;
+          add = false;
           order_size = get_size(client);
           break;
         case MSG_MANAGER:
-          customer = false;
+          add = true;
           order_size = get_size(client);
           break;
         case MSG_ITEM:
@@ -48,9 +77,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id){
             Orders = temp_Orders;
             temp_Orders.clear();
             client.write(&SUCCESS_BYTE,1);
-            for(auto& order:Orders){
-              std::cout << order.product << " : " << order.quantity << std::endl;
-            }
+            handle_orders(Orders,orders,inv,add);
           }
           else{
             temp_Orders.clear();
@@ -83,11 +110,8 @@ int main() {
   memory->quit = 0;
   memory->magic = MAGIC;
 
-  std::vector<std::pair<int,int>> shelves;
-  find_shelves(shelves,memory->minfo);
-  std::map<std::pair<int,int>,int> inventory;
-  std::map<std::pair<int,int>,int>::iterator it;
-
+  //find_shelves(shelves,memory->minfo);
+  Inventory inv(info);
   std::vector<Robot*> robots;
   const int nrobots = 4;
 
@@ -112,7 +136,7 @@ int main() {
   size_t count = 0;
 
   while(server.accept(client)){
-    std::thread thread(service,std::ref(order_queue),std::move(client),count);
+    std::thread thread(service,std::ref(order_queue),std::move(client),count, std::ref(inv));
     thread.detach();
     count++;
   }

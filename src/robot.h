@@ -94,6 +94,7 @@ class Robot : public cpen333::thread::thread_object {
       }
       return true;
     }
+    //TODO: Change search algorithm
     // Recursively search for our goal.
     if (col > 0 && (minfo_.maze[col - 1][row] != WALL_CHAR && minfo_.maze[col - 1][row] != SHELF_CHAR) && minfo_.visited[col - 1][row] == 0 && this->go(col - 1, row)) {
       return true;
