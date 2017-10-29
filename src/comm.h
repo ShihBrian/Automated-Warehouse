@@ -13,6 +13,7 @@ enum MessageType {
   MSG_ORDER,
   MSG_ITEM,
   MSG_END,
+  MSG_INVENTORY,
   MSG_QUIT
 };
 
@@ -37,12 +38,21 @@ void send_type(cpen333::process::socket& socket,MessageType type){
       buff[0] = MSG_END;
       socket.write(buff,1);
       break;
+    case MSG_INVENTORY:
+      buff[0] = MSG_INVENTORY;
+      socket.write(buff,1);
     default:
-      std::cout << "Invalid message type" << std::endl;
+      std::cout << "Invalid message type " << type << std::endl;
   }
 }
 
-void get_size(char* buff, size_t size){
+int get_size(cpen333::process::socket& client){
+  char size_buff[4];
+  client.read_all(size_buff, 4);
+  return (size_buff[0] << 24) | (size_buff[1] << 16) | (size_buff[2] << 8) | (size_buff[3] & 0xFF);
+}
+
+void get_send_size(char* buff, size_t size){
   for (int i=4; i-->0;) {
     // cut off byte and shift size over by 8 bits
     buff[i] = (char)(size & 0xFF);
@@ -52,7 +62,7 @@ void get_size(char* buff, size_t size){
 
 void send_size(cpen333::process::socket& socket, size_t size){
   char size_buff[4];
-  get_size(size_buff,size);
+  get_send_size(size_buff,size);
   socket.write(size_buff,4);
 }
 
@@ -77,6 +87,7 @@ void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket
   }
   send_type(socket,MSG_END);
 
+  std::cout << "Waiting for response...";
   socket.read_all(&success, 1);
   if(success==SUCCESS_BYTE){
     Orders.clear();
@@ -85,5 +96,7 @@ void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket
   else if(success==FAIL_BYTE) std::cout << "Server FAILED to receive order\n";
   else std::cout << "Unknown response\n";
 }
+
+
 
 #endif //COMM_H

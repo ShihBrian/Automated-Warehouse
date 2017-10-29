@@ -11,6 +11,8 @@ struct Shelf {
   int weight = 0;
 };
 
+//TODO: account for weight on shelves and robots
+
 class Inventory {
   //TODO: Add thread safety
   std::vector <Shelf> shelves;
@@ -70,34 +72,36 @@ class Inventory {
       return true;
     }
 
-    void display_total_inv(){
-      std::cout << "Total Warehouse Inventory:" << std::endl;
+    void get_total_inv(std::vector<Order_item>& orders){
+      Order_item order;
       for(auto const& item : total_inv){
-        std::cout << item.first << " : " << item.second << std::endl;
+        order.product = item.first;
+        order.quantity = item.second;
+        orders.push_back(order);
       }
     }
 
-  void get_available_shelf(int& col, int& row, Order_item order){
-    for(auto& shelf:shelves){
-      if (shelf.quantity == 0){
-        shelf.quantity = order.quantity;
-        shelf.product = order.product;
-        col = shelf.col;
-        row = shelf.row;
-        break;
+    void get_available_shelf(int& col, int& row, Order_item order){
+      for(auto& shelf:shelves){
+        if (shelf.quantity == 0){
+          shelf.quantity = order.quantity;
+          shelf.product = order.product;
+          col = shelf.col;
+          row = shelf.row;
+          break;
+        }
       }
     }
-  }
 
-  void find_product(int& col, int& row, std::string product){
-    for(auto& shelf:shelves){
-      if (shelf.product == product){
-        col = shelf.col;
-        row = shelf.row;
-        break;
+    void find_product(int& col, int& row, std::string product){
+      for(auto& shelf:shelves){
+        if (shelf.product == product){
+          col = shelf.col;
+          row = shelf.row;
+          break;
+        }
       }
     }
-  }
 };
 
 

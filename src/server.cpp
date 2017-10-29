@@ -7,12 +7,6 @@ std::vector<std::pair<int,int>> shelves;
 std::map<std::pair<int,int>,int> inventory;
 std::map<std::pair<int,int>,int>::iterator it;
 
-int get_size(cpen333::process::socket& client){
-  char size_buff[4];
-  client.read_all(size_buff, 4);
-  return (size_buff[0] << 24) | (size_buff[1] << 16) | (size_buff[2] << 8) | (size_buff[3] & 0xFF);
-}
-
 //TODO: add thread safety
 void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& inv, bool add) {
   int col, row;
@@ -48,6 +42,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
   int str_size;
   char buff[256];
   std::string product;
+
   while(!quit) {
     client.read_all(&msg, 1);
     if(msg==START_BYTE) {
@@ -85,10 +80,14 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
             client.write(&FAIL_BYTE,1);
           }
           break;
+        case MSG_INVENTORY:
+          inv.get_total_inv(temp_Orders);
+          send_order(temp_Orders,client,false);
+          std::cout << "Inventory details sent" << std::endl;
+           break;
         case MSG_QUIT:
           quit = true;
           break;
-
       }
     }
   }

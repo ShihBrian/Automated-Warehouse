@@ -17,7 +17,7 @@ std::vector<std::string> product_names = {"","Apples","Bananas","Grapes","Pears"
 std::vector<std::string> product_menu = {"Apples","Bananas","Grapes","Pears","Watermelons","Done"};
 std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order","Quit"};
 std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Order","View Order Status",
-                                         "View Inventory","Shutdown Server","Quit"};
+                                         "View Inventory","Quit"};
 
 enum PRODUCT{
   APPLES = 1,
@@ -43,7 +43,6 @@ enum Popt {
   M_SEND,
   M_VIEW_ORDER_STATUS,
   M_VIEW_INV,
-  M_SHUTDOWN_SERVER,
   M_QUIT
 };
 void print_menu(std::vector<std::string> menu){
