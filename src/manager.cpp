@@ -1,9 +1,8 @@
 #include "Order.h"
 #include "comm.h"
 
-void receive_inv(cpen333::process::socket& socket){
+void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Orders){
   std::vector<Order_item> temp_Orders;
-  std::vector<Order_item> Orders;
   Order_item order;
   bool done = false;
   char msg;
@@ -34,13 +33,9 @@ void receive_inv(cpen333::process::socket& socket){
           break;
         case MSG_END:
           if(order_size == 0){
-            safe_printf("Order successfully received\n");
             Orders = temp_Orders;
             temp_Orders.clear();
             socket.write(&SUCCESS_BYTE,1);
-            for(auto& order:Orders){
-              std::cout << order.product << " " << order.quantity << std::endl;
-            }
             done = true;
           }
           else{
@@ -99,8 +94,13 @@ int main(){
       case Popt::M_VIEW_ORDER_STATUS:
         break;
       case Popt::M_VIEW_INV:
+        Orders.clear();
         send_type(socket,MSG_INVENTORY);
-        receive_inv(socket);
+        std::cout << "Current Inventory" << std::endl;
+        receive_inv(socket,Orders);
+        for(auto& order:Orders){
+          std::cout << order.product << " " << order.quantity << std::endl;
+        }
         break;
       case Popt::M_QUIT:
         quit = true;

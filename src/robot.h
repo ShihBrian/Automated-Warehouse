@@ -4,7 +4,7 @@
 #include <cpen333/thread/thread_object.h>
 #include <iostream>
 #include <thread>
-
+#include <deque>
 #include "OrderQueue.h"
 #include "safe_printf.h"
 #include "warehouse_layout.h"
@@ -22,7 +22,7 @@ class Robot : public cpen333::thread::thread_object {
   int id_;
   cpen333::process::shared_object<SharedData> memory_;
   cpen333::process::mutex mutex_;
-
+  std::deque<std::pair<int,int>> path;
   // local copy of maze
   MazeInfo minfo_;
   int end_col = 0;
@@ -73,20 +73,16 @@ class Robot : public cpen333::thread::thread_object {
       else return 0;
     }
   }
-  int go(int col, int row) {
+
+  int find_path(int col, int row) {
     if (memory_->quit) return -1;
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    {
-      std::lock_guard<decltype(mutex_)> lock(mutex_);
-      memory_->rinfo.rloc[idx_][COL_IDX] = col;
-      memory_->rinfo.rloc[idx_][ROW_IDX] = row;
-    }
     // Make the move (if it's wrong, we will backtrack later.
     minfo_.visited[col][row] = 1;
-
+    path.push_back({col,row});
     // Check if we have reached our goal.
     if (col == end_col && row == end_row) {
       coordinates = std::make_tuple(row,col);
+      //clear visited array
       for (int i=0; i<minfo_.rows;i++){
         for(int j=0;j<minfo_.cols;j++){
           minfo_.visited[j][i] = 0;
@@ -94,32 +90,39 @@ class Robot : public cpen333::thread::thread_object {
       }
       return true;
     }
-    //TODO: Change search algorithm
     // Recursively search for our goal.
-    if (col > 0 && (minfo_.maze[col - 1][row] != WALL_CHAR && minfo_.maze[col - 1][row] != SHELF_CHAR) && minfo_.visited[col - 1][row] == 0 && this->go(col - 1, row)) {
+    if (col > 0 && (minfo_.maze[col - 1][row] != WALL_CHAR && minfo_.maze[col - 1][row] != SHELF_CHAR) && minfo_.visited[col - 1][row] == 0 && this->find_path(col - 1, row)) {
       return true;
     }
-    if (col < minfo_.cols && (minfo_.maze[col + 1][row] != WALL_CHAR && minfo_.maze[col + 1][row] != SHELF_CHAR) && minfo_.visited[col + 1][row] == 0 && this->go(col + 1, row)) {
+    if (col < minfo_.cols && (minfo_.maze[col + 1][row] != WALL_CHAR && minfo_.maze[col + 1][row] != SHELF_CHAR) && minfo_.visited[col + 1][row] == 0 && this->find_path(col + 1, row)) {
       return true;
     }
-    if (row > 0 && (minfo_.maze[col][row - 1] != WALL_CHAR && minfo_.maze[col][row - 1] != SHELF_CHAR) && minfo_.visited[col][row - 1] == 0 && this->go(col, row - 1)) {
+    if (row > 0 && (minfo_.maze[col][row - 1] != WALL_CHAR && minfo_.maze[col][row - 1] != SHELF_CHAR) && minfo_.visited[col][row - 1] == 0 && this->find_path(col, row - 1)) {
       return true;
     }
-    if (row < minfo_.rows && (minfo_.maze[col][row + 1] != WALL_CHAR && minfo_.maze[col][row + 1] != SHELF_CHAR) && minfo_.visited[col][row + 1] == 0 && this->go(col, row + 1)) {
+    if (row < minfo_.rows && (minfo_.maze[col][row + 1] != WALL_CHAR && minfo_.maze[col][row + 1] != SHELF_CHAR) && minfo_.visited[col][row + 1] == 0 && this->find_path(col, row + 1)) {
       return true;
     }
 
     // Otherwise we need to backtrack and find another solution.
     minfo_.visited[col][row] = 0;
-    {
-      std::lock_guard<decltype(mutex_)> lock(mutex_);
-      memory_->rinfo.rloc[idx_][COL_IDX] = col;
-      memory_->rinfo.rloc[idx_][ROW_IDX] = row;
-    }
+    path.pop_back();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     return false;
   }
+
+  void go(){
+    for(auto& coordinate : path) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        memory_->rinfo.rloc[idx_][COL_IDX] = coordinate.first;
+        memory_->rinfo.rloc[idx_][ROW_IDX] = coordinate.second;
+      }
+    }
+    path.clear();
+  }
+
   int id() {
     return id_;
   }
@@ -144,12 +147,16 @@ class Robot : public cpen333::thread::thread_object {
       if (order.row == 999 && order.col == 999) break;
       end_col = order.col;
       end_row = order.row;
-      if(this->go(x,y)){
+      if(this->find_path(x,y)){
         std::tie(y,x) = coordinates;
+        this->go();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         end_col = home_col;
         end_row = home_row;
-        if(this->go(x,y)) std::tie(y,x) = coordinates;
+        if(this->find_path(x,y)){
+          std::tie(y,x) = coordinates;
+          this->go();
+        }
       }
       else{
         safe_printf("Failed to find destination\n");

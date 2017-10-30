@@ -41,6 +41,7 @@ void send_type(cpen333::process::socket& socket,MessageType type){
     case MSG_INVENTORY:
       buff[0] = MSG_INVENTORY;
       socket.write(buff,1);
+      break;
     default:
       std::cout << "Invalid message type " << type << std::endl;
   }
