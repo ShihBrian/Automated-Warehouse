@@ -14,13 +14,13 @@ class OrderQueue {
    * Adds an order item to the queue
    * @param order item to add
    */
-  virtual void add(const Order& order) = 0;
+  virtual void add(std::vector<Order>& order) = 0;
 
   /**
    * Retrieve the next order item in the queue
    * @return next available item
    */
-  virtual Order get() = 0;
+  virtual std::vector<Order> get() = 0;
 
 };
 

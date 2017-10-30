@@ -3,19 +3,19 @@
 #include "comm.h"
 #include "inventory.h"
 
-std::vector<std::pair<int,int>> shelves;
-std::map<std::pair<int,int>,int> inventory;
-std::map<std::pair<int,int>,int>::iterator it;
-
 //TODO: add thread safety
 void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& inv, bool add) {
   int col, row;
+  std::vector<Order> coordinates;
   //if removing stock and there is enough
   if (!add) {
     if (inv.check_stock(Orders)) {
       for (auto &order:Orders) {
         inv.find_product(col, row, order.product);
-        queue.add({row, col});
+        coordinates.push_back({row,col});
+        coordinates.push_back({18,1});
+        queue.add(coordinates);
+        coordinates.clear();
       }
       inv.update_inv(Orders, add);
     }
@@ -23,7 +23,10 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
   } else { //restocking
     for (auto &order:Orders) {
       inv.get_available_shelf(col, row, order);
-      queue.add({row, col});
+      coordinates.push_back({row,col});
+      coordinates.push_back({18,1});
+      queue.add(coordinates);
+      coordinates.clear();
     }
     inv.update_inv(Orders, add);
   }
@@ -141,13 +144,14 @@ int main() {
   }
 
   server.close();
-
+/*
   for(int i=0;i<nrobots;i++){
     order_queue.add({999,999});
   }
   for (auto& robot : robots) {
     robot->join();
   }
+  */
   safe_printf("Robots done\n");
 
   for (auto& robot : robots) {

@@ -12,7 +12,7 @@ struct Shelf {
 };
 
 //TODO: account for weight on shelves and robots
-
+//TODO: move products to server side, clients must query server for list of available products
 class Inventory {
   //TODO: Add thread safety
   std::vector <Shelf> shelves;
