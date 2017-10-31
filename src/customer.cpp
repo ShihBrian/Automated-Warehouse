@@ -2,7 +2,7 @@
 #include "comm.h"
 
 int main(){
-  cpen333::process::socket socket("localhost",55555);
+  cpen333::process::socket socket("localhost",55556);
   std::cout << "Client connecting...";
   std::cout.flush();
 
@@ -12,8 +12,9 @@ int main(){
 
   int cmd;
   bool quit = false;
+  std::vector<Order_item> product_list;
   std::vector<Order_item> Orders;
-
+  std::vector<std::string> products;
   Order_item order;
   order.product = "Apples";
   order.quantity = 10;
@@ -28,7 +29,8 @@ int main(){
     std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
     switch(cmd){
       case Copt::C_CREATE:
-        create_order(Orders);
+        query_products(product_list,socket,products);
+        create_order(Orders,products);
         break;
       case Copt::C_EDIT:
         edit_order(Orders);
@@ -37,7 +39,8 @@ int main(){
         print_order(Orders);
         break;
       case Copt::C_SEND:
-        send_order(Orders,socket,true);
+        send_type(socket,MSG_CUSTOMER);
+        send_order(Orders,socket);
         break;
       case Copt::C_QUIT:
         quit = true;

@@ -40,12 +40,10 @@ class CircularOrderQueue : public virtual OrderQueue {
     pidx_ = (pidx_+1)%CIRCULAR_BUFF_SIZE;
     pmutex_.unlock();
     buff_[pidx] = order;
-    std::cout << "Consumer notify" << std::endl;
     consumer_.notify();
   }
 
   std::vector<Order> get() {
-    std::cout << "Consumer wait" << std::endl;
     consumer_.wait();
     int cidx;
     cmutex_.lock();
@@ -55,7 +53,6 @@ class CircularOrderQueue : public virtual OrderQueue {
     cmutex_.unlock();
     std::vector<Order> out = buff_[cidx];
     producer_.notify();
-    std::cout << "Consumer got order" << std::endl;
     return out;
   }
 

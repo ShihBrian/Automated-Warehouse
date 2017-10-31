@@ -141,19 +141,12 @@ class Robot : public cpen333::thread::thread_object {
     }
     int x = this->get_start_col();
     int y = this->get_start_row();
-    int i = 0;
     std::vector<Order> orders = orders_.get();
     while (!quit) {
-      int j = 0;
-      for(auto& order:orders){
-        safe_printf("Robot %d Path %d Row: %d Col: %d\n",id_,j,order.row,order.col);
-        j++;
-      }
       for (auto &order:orders) {
         if (order.row == 999 && order.col == 999) quit = true;
         end_col = order.col;
         end_row = order.row;
-        safe_printf("Robot %d finding path %d\n", id_, i);
         if (this->find_path(x, y)) {
           std::tie(y, x) = coordinates;
           this->go();
@@ -161,8 +154,6 @@ class Robot : public cpen333::thread::thread_object {
         } else {
           safe_printf("Failed to find destination\n");
         }
-        i++;
-        safe_printf("Robot %d finished path %d\n", id_, i);
       }
 
       orders = orders_.get();

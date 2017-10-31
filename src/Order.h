@@ -2,31 +2,16 @@
 #define LAB6_ORDER_H
 
 #include "server.h"
+#include "inventory.h"
 
 /**
  * Basic order information containing a customer id and item id
  */
 
-struct Order_item{
-  std::string product;
-  int quantity = 0;
-};
-
 //TODO: Dynamically add/remove products
-std::vector<std::string> product_names = {"","Apples","Bananas","Grapes","Pears","Watermelons"};
-std::vector<std::string> product_menu = {"Apples","Bananas","Grapes","Pears","Watermelons","Done"};
-std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order","Quit"};
+std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order"};
 std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Order","View Order Status",
-                                         "View Inventory","Quit"};
-
-enum PRODUCT{
-  APPLES = 1,
-  BANANAS,
-  GRAPES,
-  PEARS,
-  WATERMELONS,
-  DONE
-};
+                                         "View Inventory","Add New Product","Remove Product"};
 
 enum Copt {
   C_CREATE = 1,
@@ -43,6 +28,8 @@ enum Popt {
   M_SEND,
   M_VIEW_ORDER_STATUS,
   M_VIEW_INV,
+  M_ADD_NEW_PROD,
+  M_REMOVE_PROD,
   M_QUIT
 };
 void print_menu(std::vector<std::string> menu){
@@ -51,19 +38,20 @@ void print_menu(std::vector<std::string> menu){
   for(int i=1;i<=menu.size();i++){
     std::cout << " (" << i << ") " << menu[i-1] << std::endl;
   }
+  std::cout << " (" << menu.size()+1 << ") Done" << std::endl;
   std::cout << "=========================================" << std::endl;
   std::cout << "Enter number: ";
   std::cout.flush();
 }
 
-int create_order(std::vector<Order_item>& Orders){
+int create_order(std::vector<Order_item>& Orders, std::vector<std::string> products){
   Order_item order;
   int choice,quantity;
   bool valid = false;
   while(true){
-    print_menu(product_menu);
+    print_menu(products);
     std::cin >> choice;
-    if(choice!=DONE) {
+    if(choice!=products.size()+1) {
       while(!valid) {
         std::cout << "Quantity: " << std::endl;
         std::cin >> quantity;
@@ -74,25 +62,7 @@ int create_order(std::vector<Order_item>& Orders){
     else{
       return 0;
     }
-    switch(choice){
-      case APPLES:
-        order.product = product_names[APPLES];
-        break;
-      case BANANAS:
-        order.product = product_names[BANANAS];
-        break;
-      case GRAPES:
-        order.product = product_names[GRAPES];
-        break;
-      case PEARS:
-        order.product = product_names[PEARS];
-        break;
-      case WATERMELONS:
-        order.product = product_names[WATERMELONS];
-        break;
-      default:
-        std::cout << "Invalid choice, try again" << std::endl;
-    }
+    order.product = products[choice-1];
     order.quantity = quantity;
     Orders.push_back(order);
     valid = false;

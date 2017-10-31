@@ -14,37 +14,18 @@ enum MessageType {
   MSG_ITEM,
   MSG_END,
   MSG_INVENTORY,
+  MSG_PRODUCTS,
+  MSG_ADD,
+  MSG_REMOVE,
+  MSG_SERVER,
   MSG_QUIT
 };
 
 void send_type(cpen333::process::socket& socket,MessageType type){
-  char buff[1];
-  char start = START_BYTE;
-  socket.write(&start,1);
-  switch(type){
-    case MSG_CUSTOMER:
-      buff[0] = MSG_CUSTOMER;
-      socket.write(buff,1);
-      break;
-    case MSG_MANAGER:
-      buff[0] = MSG_MANAGER;
-      socket.write(buff,1);
-      break;
-    case MSG_ITEM:
-      buff[0] = MSG_ITEM;
-      socket.write(buff,1);
-      break;
-    case MSG_END:
-      buff[0] = MSG_END;
-      socket.write(buff,1);
-      break;
-    case MSG_INVENTORY:
-      buff[0] = MSG_INVENTORY;
-      socket.write(buff,1);
-      break;
-    default:
-      std::cout << "Invalid message type " << type << std::endl;
-  }
+  char buff = START_BYTE;
+  socket.write(&buff,1);
+  buff = type;
+  socket.write(&buff,1);
 }
 
 int get_size(cpen333::process::socket& client){
@@ -67,12 +48,10 @@ void send_size(cpen333::process::socket& socket, size_t size){
   socket.write(size_buff,4);
 }
 
-void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket,bool customer){
+void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket){
   const char* str;
   char success;
   size_t length;
-  if(customer) send_type(socket,MSG_CUSTOMER);
-  else send_type(socket,MSG_MANAGER);
 
   size_t num_items = Orders.size();
   send_size(socket, num_items);
@@ -88,7 +67,7 @@ void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket
   }
   send_type(socket,MSG_END);
 
-  std::cout << "Waiting for response...";
+  std::cout << "Send_order: Waiting for response...";
   socket.read_all(&success, 1);
   if(success==SUCCESS_BYTE){
     Orders.clear();
@@ -98,6 +77,59 @@ void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket
   else std::cout << "Unknown response\n";
 }
 
+void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Orders){
+  std::vector<Order_item> temp_Orders;
+  Order_item order;
+  bool done = false;
+  char msg;
+  int order_size;
+  int str_size;
+  char buff[256];
+  std::string product;
+  while(!done) {
+    socket.read_all(&msg, 1);
+    if(msg==START_BYTE) {
+      socket.read_all(&msg, 1);
+      int type = msg & 0xFF;
+      switch (type) {
+        case MSG_SERVER:
+          order_size = get_size(socket);
+          break;
+        case MSG_ITEM:
+          order_size--;
+          order.quantity = get_size(socket);
+          str_size = get_size(socket);
+          socket.read_all(buff,str_size);
+          product = buff;
+          order.product = product;
+          temp_Orders.push_back(order);
+          break;
+        case MSG_END:
+          if(order_size == 0){
+            Orders = temp_Orders;
+            temp_Orders.clear();
+            socket.write(&SUCCESS_BYTE,1);
+            done = true;
+          }
+          else{
+            temp_Orders.clear();
+            safe_printf("Recv_inv: Order was not received\n");
+            socket.write(&FAIL_BYTE,1);
+          }
+          break;
+        default:
+          std::cout << "Recv_inv: Invalid msg type" << std::endl;
+      }
+    }
+  }
+}
 
-
+void query_products(std::vector<Order_item>& Orders, cpen333::process::socket& socket, std::vector<std::string>& products){
+  Orders.clear();
+  send_type(socket,MSG_PRODUCTS);
+  receive_inv(socket,Orders);
+  for(auto& order:Orders){
+    products.push_back(order.product);
+  }
+}
 #endif //COMM_H

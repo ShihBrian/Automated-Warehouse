@@ -40,6 +40,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
   std::cout << "Client " << id << " connected" << std::endl;
   bool quit = false;
   bool add = false;
+  bool add_product = false;
   char msg;
   int order_size;
   int str_size;
@@ -60,6 +61,10 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
           add = true;
           order_size = get_size(client);
           break;
+        case MSG_ADD:
+          add_product = true;
+          order_size = 1;
+          break;
         case MSG_ITEM:
           order_size--;
           order.quantity = get_size(client);
@@ -75,7 +80,12 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
             Orders = temp_Orders;
             temp_Orders.clear();
             client.write(&SUCCESS_BYTE,1);
-            handle_orders(Orders,orders,inv,add);
+            if(add_product) {
+              add_product = false;
+              inv.add_new_item(Orders[0].product,Orders[0].weight);
+            } else{
+              handle_orders(Orders,orders,inv,add);
+            }
           }
           else{
             temp_Orders.clear();
@@ -85,9 +95,16 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
           break;
         case MSG_INVENTORY:
           inv.get_total_inv(temp_Orders);
-          send_order(temp_Orders,client,false);
-          std::cout << "Inventory details sent" << std::endl;
-           break;
+          send_type(client,MSG_SERVER);
+          send_order(temp_Orders,client);
+          temp_Orders.clear();
+          break;
+        case MSG_PRODUCTS:
+          inv.get_available_products(temp_Orders);
+          send_type(client,MSG_SERVER);
+          send_order(temp_Orders,client);
+          temp_Orders.clear();
+          break;
         case MSG_QUIT:
           quit = true;
           break;
@@ -114,6 +131,7 @@ int main() {
 
   //find_shelves(shelves,memory->minfo);
   Inventory inv(info);
+  inv.init_inv();
   std::vector<Robot*> robots;
   const int nrobots = 4;
 
@@ -130,7 +148,7 @@ int main() {
     robot->start();
   }
 
-  cpen333::process::socket_server server(55555);
+  cpen333::process::socket_server server(55556);
   server.open();
   std::cout << "Server started on port " << server.port() << std::endl;
 
