@@ -8,11 +8,9 @@
  * Basic order information containing a customer id and item id
  */
 
-//TODO: Dynamically add/remove products
 std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order"};
 std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Order","View Order Status",
                                          "View Inventory","Add New Product","Remove Product"};
-
 enum Copt {
   C_CREATE = 1,
   C_EDIT,
@@ -32,6 +30,7 @@ enum Popt {
   M_REMOVE_PROD,
   M_QUIT
 };
+
 void print_menu(std::vector<std::string> menu){
   std::cout << std::endl;
   std::cout << "=========================================" << std::endl;

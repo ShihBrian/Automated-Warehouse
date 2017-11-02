@@ -73,6 +73,16 @@ int main(){
         send_order(Orders,socket);
         break;
       case Popt::M_REMOVE_PROD:
+        products.clear();
+        product_list.clear();
+        query_products(product_list,socket,products);
+        print_menu(products);
+        std::cin >> cmd;
+        Orders.clear();
+        order.product = products[cmd-1];
+        Orders.push_back(order);
+        send_type(socket,MSG_REMOVE);
+        send_order(Orders,socket);
         break;
       case Popt::M_QUIT:
         quit = true;

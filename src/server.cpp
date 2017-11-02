@@ -41,6 +41,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
   bool quit = false;
   bool add = false;
   bool add_product = false;
+  bool remove_product = false;
   char msg;
   int order_size;
   int str_size;
@@ -65,6 +66,10 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
           add_product = true;
           order_size = 1;
           break;
+        case MSG_REMOVE:
+          remove_product = true;
+          order_size = 1;
+          break;
         case MSG_ITEM:
           order_size--;
           order.quantity = get_size(client);
@@ -83,7 +88,12 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
             if(add_product) {
               add_product = false;
               inv.add_new_item(Orders[0].product,Orders[0].weight);
-            } else{
+            }
+            else if(remove_product){
+              remove_product = false;
+              inv.remove_inv_item(Orders[0].product);
+            }
+            else{
               handle_orders(Orders,orders,inv,add);
             }
           }
