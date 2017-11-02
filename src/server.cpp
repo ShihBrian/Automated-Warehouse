@@ -6,7 +6,11 @@
 //TODO: add thread safety
 void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& inv, bool add) {
   int col, row;
-  std::vector<Order> coordinates;
+  std::vector<Coordinate> coordinates;
+  std::cout << "Incoming orders" << std::endl;
+  for(auto& order:Orders){
+    std::cout << order.product << " : " << order.quantity << std::endl;
+  }
   //if removing stock and there is enough
   if (!add) {
     if (inv.check_stock(Orders)) {
@@ -22,9 +26,12 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
     else std::cout << "Not enough stock" << std::endl;
   } else { //restocking
     for (auto &order:Orders) {
-      inv.get_available_shelf(col, row, order);
-      coordinates.push_back({row,col});
+      coordinates = inv.get_available_shelf(order);
       coordinates.push_back({18,1});
+      std::cout << "Shelf location for " << order.product << std::endl;
+      for(auto& coordinate:coordinates){
+        std::cout << coordinate.col << " " << coordinate.row << std::endl;
+      }
       queue.add(coordinates);
       coordinates.clear();
     }
@@ -95,6 +102,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
             }
             else{
               handle_orders(Orders,orders,inv,add);
+              Orders.clear();
             }
           }
           else{
@@ -123,6 +131,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
   }
 }
 
+//TODO: Spawn delivery and restocking trucks
 int main() {
   // read maze from command-line, default to maze0
   std::string maze = MAZE_NAME;

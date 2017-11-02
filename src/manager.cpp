@@ -21,10 +21,10 @@ int main(){
   std::vector<Order_item> Orders;
   std::vector<std::string> products;
   Order_item order;
-  order.product = "Apples";
+  order.product = "Apple";
   order.quantity = 10;
   Orders.push_back(order);
-  order.product = "Bananas";
+  order.product = "Banana";
   order.quantity = 20;
   Orders.push_back(order);
 
@@ -60,6 +60,7 @@ int main(){
         for(auto& order:Orders){
           std::cout << order.product << " " << order.quantity << std::endl;
         }
+        Orders.clear();
         break;
       case Popt::M_ADD_NEW_PROD:
         std::cout << "Enter product name" << std::endl;

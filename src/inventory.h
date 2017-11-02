@@ -3,6 +3,8 @@
 
 #include <cpen333/process/mutex.h>
 
+#define SHELF_MAX_WEIGHT 100
+
 struct Order_item{
   std::string product;
   int quantity = 0;
@@ -19,7 +21,6 @@ struct Shelf {
 
 
 //TODO: account for weight on shelves and robots
-//TODO: move products to server side, clients must query server for list of available products
 class Inventory {
   //TODO: Add thread safety
   std::vector <Shelf> shelves;
@@ -90,16 +91,33 @@ class Inventory {
       }
     }
 
-    void get_available_shelf(int& col, int& row, Order_item order){
+    std::vector<Coordinate> get_available_shelf(Order_item order){
+      int row, col, weight, quantity, remaining_weight;
+      Coordinate coordinate;
+      std::vector<Coordinate> coordinates;
+      weight = get_weight(order.product);
       for(auto& shelf:shelves){
-        if (shelf.quantity == 0){
-          shelf.quantity = order.quantity;
-          shelf.product = order.product;
-          col = shelf.col;
-          row = shelf.row;
-          break;
+        if (shelf.product == order.product || shelf.quantity == 0){
+          remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
+          if(remaining_weight > weight ) {
+            quantity = remaining_weight/weight;
+            if(quantity > order.quantity) {
+              quantity = order.quantity;
+              order.quantity = 0;
+            } else {
+              order.quantity -= quantity;
+            }
+            shelf.quantity += quantity;
+            shelf.product = order.product;
+            shelf.weight += quantity*weight;
+            coordinate.col = shelf.col;
+            coordinate.row = shelf.row;
+            coordinates.push_back(coordinate);
+            if(order.quantity == 0) break;
+          }
         }
       }
+      return coordinates;
     }
 
     void find_product(int& col, int& row, std::string product){
@@ -152,6 +170,7 @@ class Inventory {
         products.push_back(item);
       }
     }
+
 
 };
 

@@ -126,10 +126,8 @@ class Robot : public cpen333::thread::thread_object {
   int id() {
     return id_;
   }
-  /**
-   * Main execution function
-   * @return 0 if completed
-   */
+
+  //TODO: Get stock from truck or move stock to delivery truck depending on order
   int main() {
     bool quit = false;
     char cmd = 0;
@@ -141,7 +139,7 @@ class Robot : public cpen333::thread::thread_object {
     }
     int x = this->get_start_col();
     int y = this->get_start_row();
-    std::vector<Order> orders = orders_.get();
+    std::vector<Coordinate> orders = orders_.get();
     while (!quit) {
       for (auto &order:orders) {
         if (order.row == 999 && order.col == 999) quit = true;

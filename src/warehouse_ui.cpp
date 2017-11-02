@@ -42,9 +42,6 @@ public:
     exit_[COL_IDX] = -1;
     exit_[ROW_IDX] = -1;
 
-    //===========================================================
-    // TODO: SEARCH MAZE FOR EXIT LOCATION
-    //===========================================================
     for (int i = 0; i<memory_->minfo.rows; i++) {
       for (int j = 0; j<memory_->minfo.cols; j++) {
         if (memory_->minfo.maze[j][i] == EXIT_CHAR) {
@@ -168,6 +165,7 @@ public:
   }
 };
 
+//TODO: Print status updates of robots, probably through socket
 int main() {
 
   // initialize previous locations of characters

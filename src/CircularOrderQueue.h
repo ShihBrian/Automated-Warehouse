@@ -12,7 +12,7 @@
  * (i.e. a fixed-size queue)
  */
 class CircularOrderQueue : public virtual OrderQueue {
-  std::vector<Order> buff_[CIRCULAR_BUFF_SIZE];
+  std::vector<Coordinate> buff_[CIRCULAR_BUFF_SIZE];
   cpen333::thread::semaphore producer_;
   cpen333::thread::semaphore consumer_;
   std::mutex pmutex_;
@@ -31,7 +31,7 @@ class CircularOrderQueue : public virtual OrderQueue {
       producer_(CIRCULAR_BUFF_SIZE), consumer_(0),
       pmutex_(), cmutex_(), pidx_(0), cidx_(0){}
 
-  void add(std::vector<Order>& order) {
+  void add(std::vector<Coordinate>& order) {
     producer_.wait();
     int pidx;
     pmutex_.lock();
@@ -43,7 +43,7 @@ class CircularOrderQueue : public virtual OrderQueue {
     consumer_.notify();
   }
 
-  std::vector<Order> get() {
+  std::vector<Coordinate> get() {
     consumer_.wait();
     int cidx;
     cmutex_.lock();
@@ -51,7 +51,7 @@ class CircularOrderQueue : public virtual OrderQueue {
     // update consumer index
     cidx_ = (cidx_+1)%CIRCULAR_BUFF_SIZE;
     cmutex_.unlock();
-    std::vector<Order> out = buff_[cidx];
+    std::vector<Coordinate> out = buff_[cidx];
     producer_.notify();
     return out;
   }
