@@ -3,7 +3,8 @@
 
 #include <cpen333/process/mutex.h>
 
-#define SHELF_MAX_WEIGHT 100
+#define SHELF_MAX_WEIGHT 200
+#define ROBOT_MAX_WEIGHT 50
 
 struct Order_item{
   std::string product;
@@ -91,8 +92,8 @@ class Inventory {
       }
     }
 
-    std::vector<Coordinate> get_available_shelf(Order_item order){
-      int row, col, weight, quantity, remaining_weight;
+    std::vector<Coordinate> get_available_shelf(Order_item order, Coordinate home){
+      int row, col, weight, quantity, remaining_weight, iterations;
       Coordinate coordinate;
       std::vector<Coordinate> coordinates;
       weight = get_weight(order.product);
@@ -112,7 +113,12 @@ class Inventory {
             shelf.weight += quantity*weight;
             coordinate.col = shelf.col;
             coordinate.row = shelf.row;
-            coordinates.push_back(coordinate);
+
+            iterations = std::ceil((quantity*weight)/((double)ROBOT_MAX_WEIGHT));
+            for(int i=0;i<iterations;i++) {
+              coordinates.push_back(coordinate);
+              coordinates.push_back(home);
+            }
             if(order.quantity == 0) break;
           }
         }

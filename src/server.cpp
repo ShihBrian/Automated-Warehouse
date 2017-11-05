@@ -7,6 +7,9 @@
 void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& inv, bool add) {
   int col, row;
   std::vector<Coordinate> coordinates;
+  Coordinate home;
+  home.col = 1;
+  home.row = 18;
   std::cout << "Incoming orders" << std::endl;
   for(auto& order:Orders){
     std::cout << order.product << " : " << order.quantity << std::endl;
@@ -17,7 +20,6 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
       for (auto &order:Orders) {
         inv.find_product(col, row, order.product);
         coordinates.push_back({row,col});
-        coordinates.push_back({18,1});
         queue.add(coordinates);
         coordinates.clear();
       }
@@ -26,8 +28,7 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
     else std::cout << "Not enough stock" << std::endl;
   } else { //restocking
     for (auto &order:Orders) {
-      coordinates = inv.get_available_shelf(order);
-      coordinates.push_back({18,1});
+      coordinates = inv.get_available_shelf(order,home);
       std::cout << "Shelf location for " << order.product << std::endl;
       for(auto& coordinate:coordinates){
         std::cout << coordinate.col << " " << coordinate.row << std::endl;
