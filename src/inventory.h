@@ -20,8 +20,7 @@ struct Shelf {
   int weight = 0;
 };
 
-
-//TODO: account for weight on shelves and robots
+//TODO: function to return shelves to visit to fulfill order
 class Inventory {
   //TODO: Add thread safety
   std::vector <Shelf> shelves;
@@ -92,7 +91,7 @@ class Inventory {
       }
     }
 
-    std::vector<Coordinate> get_available_shelf(Order_item order, Coordinate home){
+    std::vector<Coordinate> get_available_shelf(Order_item order, Coordinate home, Coordinate dock){
       int row, col, weight, quantity, remaining_weight, iterations;
       Coordinate coordinate;
       std::vector<Coordinate> coordinates;
@@ -116,13 +115,14 @@ class Inventory {
 
             iterations = std::ceil((quantity*weight)/((double)ROBOT_MAX_WEIGHT));
             for(int i=0;i<iterations;i++) {
+              coordinates.push_back(dock);
               coordinates.push_back(coordinate);
-              coordinates.push_back(home);
             }
             if(order.quantity == 0) break;
           }
         }
       }
+      coordinates.push_back(home);
       return coordinates;
     }
 
@@ -177,6 +177,20 @@ class Inventory {
       }
     }
 
+  //TODO: Add msg to get shelf info
+    Order_item get_shelf_info(int col, int row){
+      Order_item item;
+      for(auto& shelf: shelves){
+        if(shelf.col == col && shelf.row == row){
+          item.quantity = shelf.quantity;
+          item.product = shelf.product;
+          item.weight = shelf.weight;
+          return item;
+        }
+      }
+      item.product = "N/A";
+      return item;
+    }
 
 };
 

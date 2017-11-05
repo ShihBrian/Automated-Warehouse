@@ -60,6 +60,8 @@ public:
     static const char EXIT = 176;  // EXIT character
     static const char HOME = 72;  // EXIT character
     static const char SHELF = 83;
+    static const char OUT_DOCK = 79;
+    static const char IN_DOCK = 73;
     MazeInfo& minfo = memory_->minfo;
     RunnerInfo& rinfo = memory_->rinfo;
 
@@ -82,8 +84,39 @@ public:
         else if(ch == SHELF_CHAR){
           std::printf("%c", SHELF);
         }
+        else if(ch == OUT_CHAR){
+          std::printf("%c", OUT_DOCK);
+        }
+        else if(ch == IN_CHAR){
+          std::printf("%c", IN_DOCK);
+        }
         else {
           std::printf("%c", EMPTY_CHAR);
+        }
+      }
+    }
+  }
+
+  void draw_objects(){
+    static const char HOME = 72;  // EXIT character
+    static const char OUT_DOCK = 79;
+    static const char IN_DOCK = 73;
+    MazeInfo& minfo = memory_->minfo;
+    RunnerInfo& rinfo = memory_->rinfo;
+
+    // draw maze
+    for (int r = 0; r < minfo.rows; ++r) {
+      for (int c = 0; c < minfo.cols; ++c) {
+        display_.set_cursor_position(YOFF + r, XOFF+c);
+        char ch = minfo.maze[c][r];
+        if (ch == HOME_CHAR){
+          std::printf("%c", HOME);
+        }
+        else if(ch == OUT_CHAR){
+          std::printf("%c", OUT_DOCK);
+        }
+        else if(ch == IN_CHAR){
+          std::printf("%c", IN_DOCK);
         }
       }
     }
@@ -179,6 +212,7 @@ int main() {
   // continue looping until main program has quit
   while (!ui.quit()) {
     ui.draw_runners();
+    ui.draw_objects();
     std::this_thread::sleep_for(std::chrono::milliseconds(80));
   }
 

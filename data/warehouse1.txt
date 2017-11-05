@@ -7,7 +7,7 @@ X S S S S S X
 X S S S S S X
 X S S S S S X
 X S S S S S X
-X           X
+I           O
 X S S S S S X
 X S S S S S X
 X S S S S S X

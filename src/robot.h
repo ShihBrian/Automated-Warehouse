@@ -128,6 +128,7 @@ class Robot : public cpen333::thread::thread_object {
   }
 
   //TODO: Get stock from truck or move stock to delivery truck depending on order
+  //TODO: Add loading dock and shipping dock
   int main() {
     bool quit = false;
     char cmd = 0;

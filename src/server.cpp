@@ -3,11 +3,34 @@
 #include "comm.h"
 #include "inventory.h"
 
+Coordinate home, out_dock, in_dock;
+
+void find_coordinates(MazeInfo info){
+  char c;
+  for(int col = 0; col < info.cols; col++){
+    for(int row = 0; row < info.rows; row++){
+      c = info.maze[col][row];
+      if(c == 'H'){
+        home.col = col;
+        home.row = row;
+      }
+      else if(c == 'I'){
+        in_dock.col = col;
+        in_dock.row = row;
+      }
+      else if(c == 'O'){
+        out_dock.col = col;
+        out_dock.row = row;
+      }
+    }
+  }
+}
+
 //TODO: add thread safety
 void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& inv, bool add) {
   int col, row;
   std::vector<Coordinate> coordinates;
-  Coordinate home;
+
   home.col = 1;
   home.row = 18;
   std::cout << "Incoming orders" << std::endl;
@@ -28,7 +51,7 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
     else std::cout << "Not enough stock" << std::endl;
   } else { //restocking
     for (auto &order:Orders) {
-      coordinates = inv.get_available_shelf(order,home);
+      coordinates = inv.get_available_shelf(order,home,in_dock);
       std::cout << "Shelf location for " << order.product << std::endl;
       for(auto& coordinate:coordinates){
         std::cout << coordinate.col << " " << coordinate.row << std::endl;
@@ -149,7 +172,8 @@ int main() {
   memory->quit = 0;
   memory->magic = MAGIC;
 
-  //find_shelves(shelves,memory->minfo);
+  find_coordinates(info);
+
   Inventory inv(info);
   inv.init_inv();
   std::vector<Robot*> robots;

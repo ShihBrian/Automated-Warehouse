@@ -10,6 +10,8 @@
 #define VISITED_CHAR 'V'
 #define HOME_CHAR 'H'
 #define SHELF_CHAR 'S'
+#define OUT_CHAR 'O'
+#define IN_CHAR 'I'
 
 #define COL_IDX 0
 #define ROW_IDX 1
