@@ -140,10 +140,14 @@ class Robot : public cpen333::thread::thread_object {
     }
     int x = this->get_start_col();
     int y = this->get_start_row();
-    std::vector<Coordinate> orders = orders_.get();
+    std::vector<Coordinate> orders;
     while (!quit) {
+      orders = orders_.get();
       for (auto &order:orders) {
-        if (order.row == 999 && order.col == 999) quit = true;
+        if (order.row == 999 && order.col == 999) {
+          quit = true;
+          break;
+        }
         end_col = order.col;
         end_row = order.row;
         if (this->find_path(x, y)) {
@@ -155,7 +159,7 @@ class Robot : public cpen333::thread::thread_object {
         }
       }
 
-      orders = orders_.get();
+
     }
 
     safe_printf("Robot %d done\n", id_);

@@ -85,6 +85,12 @@ int main(){
         send_type(socket,MSG_REMOVE);
         send_order(Orders,socket);
         break;
+      case Popt::M_MOD_ROBOT:
+        print_menu(mod_robot_menu);
+        std::cin >> cmd;
+        send_type(socket,MSG_MOD_ROBOT);
+        send_generic(socket,cmd,"Modify successful","Failed to modify");
+        break;
       case Popt::M_QUIT:
         quit = true;
         break;

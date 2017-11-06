@@ -4,7 +4,12 @@
 #include "inventory.h"
 
 Coordinate home, out_dock, in_dock;
+std::vector<Robot*> robots;
+CircularOrderQueue order_queue;
+CircularOrderQueue serve_queue;
+int nrobots = 4;
 
+//TODO: add manager option to shutdown server
 void find_coordinates(MazeInfo info){
   char c;
   for(int col = 0; col < info.cols; col++){
@@ -23,6 +28,21 @@ void find_coordinates(MazeInfo info){
         out_dock.row = row;
       }
     }
+  }
+}
+
+void modify_robots(bool add){
+  Coordinate poison = {999,999};
+  std::vector<Coordinate> order;
+  if(add){
+    nrobots++;
+    robots.push_back(new Robot(nrobots, order_queue, serve_queue));
+    robots[robots.size()-1]->start();
+  }
+  else{
+    order.push_back(poison);
+    nrobots--;
+    order_queue.add(order);
   }
 }
 
@@ -147,6 +167,23 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
           send_order(temp_Orders,client);
           temp_Orders.clear();
           break;
+        case MSG_MOD_ROBOT:
+          client.read(&msg,1);
+          if(msg == 1) {
+            std::cout << "Adding Robot" << std::endl;
+            modify_robots(1);
+            client.write(&SUCCESS_BYTE,1);
+          }
+          else if(msg == 2){
+            std::cout << "Removing Robot" << std::endl;
+            modify_robots(0);
+            client.write(&SUCCESS_BYTE,1);
+          }
+          else{
+            std::cout << "Modify robot invalid command" << std::endl;
+            client.write(&FAIL_BYTE,1);
+          }
+          break;
         case MSG_QUIT:
           quit = true;
           break;
@@ -176,11 +213,6 @@ int main() {
 
   Inventory inv(info);
   inv.init_inv();
-  std::vector<Robot*> robots;
-  const int nrobots = 4;
-
-  CircularOrderQueue order_queue;
-  CircularOrderQueue serve_queue;
 
   //TODO: Add or remove robots dynamically
   for (int i=0; i<nrobots; ++i) {
@@ -206,14 +238,15 @@ int main() {
   }
 
   server.close();
-/*
+  /*
   for(int i=0;i<nrobots;i++){
     order_queue.add({999,999});
   }
+  */
   for (auto& robot : robots) {
     robot->join();
   }
-  */
+
   safe_printf("Robots done\n");
 
   for (auto& robot : robots) {

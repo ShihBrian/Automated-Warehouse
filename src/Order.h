@@ -10,7 +10,9 @@
 
 std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order"};
 std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Order","View Order Status",
-                                         "View Inventory","Add New Product","Remove Product"};
+                                         "View Inventory","Add New Product","Remove Product","Add/Remove Robots"};
+std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot", "Modify Max Weight"};
+
 enum Copt {
   C_CREATE = 1,
   C_EDIT,
@@ -28,6 +30,7 @@ enum Popt {
   M_VIEW_INV,
   M_ADD_NEW_PROD,
   M_REMOVE_PROD,
+  M_MOD_ROBOT,
   M_QUIT
 };
 
@@ -99,5 +102,7 @@ void edit_order(std::vector<Order_item>& Orders){
     else std::cout << "Invalid choice, try again" << std::endl;
   }
 }
+
+//TODO: change max weight of robots
 
 #endif //LAB6_ORDER_H

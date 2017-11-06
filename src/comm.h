@@ -18,6 +18,7 @@ enum MessageType {
   MSG_ADD,
   MSG_REMOVE,
   MSG_SERVER,
+  MSG_MOD_ROBOT,
   MSG_QUIT
 };
 
@@ -48,6 +49,7 @@ void send_size(cpen333::process::socket& socket, size_t size){
   socket.write(size_buff,4);
 }
 
+//TODO: send generic message
 void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket){
   const char* str;
   char success;
@@ -75,6 +77,21 @@ void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket
   }
   else if(success==FAIL_BYTE) std::cout << "Server FAILED to receive order\n";
   else std::cout << "Unknown response\n";
+}
+
+void send_generic(cpen333::process::socket& socket, char data, std::string success_msg, std::string fail_msg){
+  char success;
+
+  socket.write(&data,1);
+
+  std::cout << "Send_generic: Waiting for response...";
+  socket.read_all(&success, 1);
+  if(success==SUCCESS_BYTE){
+    std::cout << success_msg;
+  }
+  else if(success==FAIL_BYTE) std::cout << fail_msg;
+  else std::cout << "Unknown response\n";
+
 }
 
 void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Orders){
