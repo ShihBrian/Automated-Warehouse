@@ -24,14 +24,14 @@ struct Shelf {
 class Inventory {
   //TODO: Add thread safety
   std::vector <Shelf> shelves;
-  MazeInfo minfo;
+  WarehouseInfo minfo;
   Shelf shelf;
   std::map<std::string,int> total_inv;
   std::vector<std::string> default_products = {"Apple","Banana","Grape","Pear","Watermelon"};
   std::vector<int> default_weight = {2,3,1,2,10};
   std::vector<Order_item> available_products;
   public:
-    Inventory(MazeInfo &maze) : minfo(maze) {
+    Inventory(WarehouseInfo &maze) : minfo(maze) {
       for (int r = 0; r < minfo.rows; r++) {
         for (int c = 0; c < minfo.cols; c++) {
           if (minfo.maze[c][r] == SHELF_CHAR) {

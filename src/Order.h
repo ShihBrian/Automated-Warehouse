@@ -9,7 +9,7 @@
  */
 
 std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order"};
-std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Order","View Order Status",
+std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Restocking Truck","View Order Status",
                                          "View Inventory","Add New Product","Remove Product","Add/Remove Robots"};
 std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot", "Modify Max Weight"};
 

@@ -6,9 +6,9 @@ X S S S S S X
 X S S S S S X
 X S S S S S X
 X S S S S S X
-X S S S S S X
-I           O
-X S S S S S X
+D S S S S S X
+D           X
+D S S S S S X
 X S S S S S X
 X S S S S S X
 X S S S S S X

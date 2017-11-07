@@ -24,7 +24,7 @@ class Robot : public cpen333::thread::thread_object {
   cpen333::process::mutex mutex_;
   std::deque<std::pair<int,int>> path;
   // local copy of maze
-  MazeInfo minfo_;
+  WarehouseInfo minfo_;
   int end_col = 0;
   int end_row = 0;
   std::tuple<int,int> coordinates;

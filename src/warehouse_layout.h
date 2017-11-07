@@ -10,23 +10,23 @@
 #define VISITED_CHAR 'V'
 #define HOME_CHAR 'H'
 #define SHELF_CHAR 'S'
-#define OUT_CHAR 'O'
-#define IN_CHAR 'I'
+#define DOCK_CHAR 'D'
+
 
 #define COL_IDX 0
 #define ROW_IDX 1
 
-#define MAX_MAZE_SIZE 80
+#define MAX_WAREHOUSE_SIZE 80
 #define MAX_RUNNERS   50
 
 #define MAGIC 123654
 
 #define MAZE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\warehouse1.txt"
-struct MazeInfo {
+struct WarehouseInfo {
   int rows;           // rows in maze
   int cols;           // columns in maze
-  char maze[MAX_MAZE_SIZE][MAX_MAZE_SIZE];  // maze storage
-  char visited[MAX_MAZE_SIZE][MAX_MAZE_SIZE];
+  char maze[MAX_WAREHOUSE_SIZE][MAX_WAREHOUSE_SIZE];  // maze storage
+  char visited[MAX_WAREHOUSE_SIZE][MAX_WAREHOUSE_SIZE];
 };
 
 struct RunnerInfo {
@@ -35,7 +35,7 @@ struct RunnerInfo {
 };
 
 struct SharedData {
-  MazeInfo minfo;    // maze info
+  WarehouseInfo minfo;    // maze info
   RunnerInfo rinfo;  // runner info
   bool quit;         // tell everyone to quit
   int magic;

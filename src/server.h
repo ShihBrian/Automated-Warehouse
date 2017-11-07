@@ -15,7 +15,7 @@
 
 int end_col, end_row;
 
-void load_maze(const std::string& filename, MazeInfo& minfo) {
+void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 
   // initialize number of rows and columns
   minfo.rows = 0;
@@ -49,7 +49,7 @@ void load_maze(const std::string& filename, MazeInfo& minfo) {
 }
 
 //TODO: Find home position
-void init_runners(const MazeInfo& minfo, RunnerInfo& rinfo) {
+void init_runners(const WarehouseInfo& minfo, RunnerInfo& rinfo) {
   rinfo.nrunners = 0;
   // fill in random placements for future runners
   for (size_t i=0; i<MAX_RUNNERS; ++i) {

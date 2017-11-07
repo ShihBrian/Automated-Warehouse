@@ -5,13 +5,13 @@
 
 Coordinate home, out_dock, in_dock;
 std::vector<Robot*> robots;
-CircularOrderQueue order_queue;
-CircularOrderQueue serve_queue;
+CircularOrderQueue incoming_queue;
+CircularOrderQueue outgoing_queue;
 int nrobots = 4;
 
 //TODO: add manager option to shutdown server
-//TODO: add ability for server to respond with a success and fail string along with the byte
-void find_coordinates(MazeInfo info){
+
+void find_coordinates(WarehouseInfo info){
   char c;
   for(int col = 0; col < info.cols; col++){
     for(int row = 0; row < info.rows; row++){
@@ -38,18 +38,18 @@ void modify_robots(bool add){
   std::vector<Coordinate> order;
   if(add){
     nrobots++;
-    robots.push_back(new Robot(nrobots, order_queue, serve_queue));
+    robots.push_back(new Robot(nrobots, incoming_queue, outgoing_queue));
     robots[robots.size()-1]->start();
   }
   else{
     order.push_back(poison);
     nrobots--;
-    order_queue.add(order);
+    incoming_queue.add(order);
   }
 }
 
 //TODO: add thread safety
-void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& inv, bool add) {
+void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   int col, row;
   std::vector<Coordinate> coordinates;
 
@@ -65,7 +65,7 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
       for (auto &order:Orders) {
         inv.find_product(col, row, order.product);
         coordinates.push_back({row,col});
-        queue.add(coordinates);
+        outgoing_queue.add(coordinates);
         coordinates.clear();
       }
       inv.update_inv(Orders, add);
@@ -78,7 +78,7 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
       for(auto& coordinate:coordinates){
         std::cout << coordinate.col << " " << coordinate.row << std::endl;
       }
-      queue.add(coordinates);
+      incoming_queue.add(coordinates);
       coordinates.clear();
     }
     inv.update_inv(Orders, add);
@@ -86,7 +86,7 @@ void handle_orders(std::vector<Order_item> Orders,OrderQueue& queue, Inventory& 
 }
 
 //TODO: Make switch into FSM
-void service(OrderQueue& orders, cpen333::process::socket client, int id, Inventory& inv){
+void service(cpen333::process::socket client, int id, Inventory& inv){
   std::vector<Order_item> temp_Orders;
   std::vector<Order_item> Orders;
   Order_item order;
@@ -137,17 +137,20 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
             safe_printf("Order successfully received\n");
             Orders = temp_Orders;
             temp_Orders.clear();
-            send_response(client,1,"Order successfully received");
             if(add_product) {
               add_product = false;
               inv.add_new_item(Orders[0].product,Orders[0].weight);
+              send_response(client,1,"Adding new product to inventory");
             }
             else if(remove_product){
               remove_product = false;
               inv.remove_inv_item(Orders[0].product);
+              send_response(client,1,"Removing product from inventory");
             }
             else{
-              handle_orders(Orders,orders,inv,add);
+              if(add) send_response(client,1,"Restocking truck arrived, unloading...");
+              else send_response(client,1,"Delivery truck arrived, waiting to be loaded...");
+              handle_orders(Orders,inv,add);
               Orders.clear();
             }
           }
@@ -201,7 +204,7 @@ int main() {
 
   cpen333::process::shared_object<SharedData> memory(MAZE_MEMORY_NAME);
   cpen333::process::mutex mutex1(MAZE_MUTEX_NAME);
-  MazeInfo info;
+  WarehouseInfo info;
   RunnerInfo runners;
   load_maze(maze, info);
   init_runners(info, runners);
@@ -218,7 +221,7 @@ int main() {
 
   //TODO: Add or remove robots dynamically
   for (int i=0; i<nrobots; ++i) {
-    robots.push_back(new Robot(i, order_queue, serve_queue));
+    robots.push_back(new Robot(i, incoming_queue, outgoing_queue));
   }
 
   // start everyone
@@ -234,17 +237,13 @@ int main() {
   size_t count = 0;
 
   while(server.accept(client)){
-    std::thread thread(service,std::ref(order_queue),std::move(client),count, std::ref(inv));
+    std::thread thread(service,std::move(client),count, std::ref(inv));
     thread.detach();
     count++;
   }
 
   server.close();
-  /*
-  for(int i=0;i<nrobots;i++){
-    order_queue.add({999,999});
-  }
-  */
+
   for (auto& robot : robots) {
     robot->join();
   }

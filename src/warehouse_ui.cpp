@@ -60,9 +60,8 @@ public:
     static const char EXIT = 176;  // EXIT character
     static const char HOME = 72;  // EXIT character
     static const char SHELF = 83;
-    static const char OUT_DOCK = 79;
-    static const char IN_DOCK = 73;
-    MazeInfo& minfo = memory_->minfo;
+    static const char DOCK = 68;
+    WarehouseInfo& minfo = memory_->minfo;
     RunnerInfo& rinfo = memory_->rinfo;
 
     // clear display
@@ -84,11 +83,8 @@ public:
         else if(ch == SHELF_CHAR){
           std::printf("%c", SHELF);
         }
-        else if(ch == OUT_CHAR){
-          std::printf("%c", OUT_DOCK);
-        }
-        else if(ch == IN_CHAR){
-          std::printf("%c", IN_DOCK);
+        else if(ch == DOCK_CHAR){
+          std::printf("%c", DOCK);
         }
         else {
           std::printf("%c", EMPTY_CHAR);
@@ -99,9 +95,8 @@ public:
 
   void draw_objects(){
     static const char HOME = 72;  // EXIT character
-    static const char OUT_DOCK = 79;
-    static const char IN_DOCK = 73;
-    MazeInfo& minfo = memory_->minfo;
+    static const char DOCK = 68;
+    WarehouseInfo& minfo = memory_->minfo;
     RunnerInfo& rinfo = memory_->rinfo;
 
     // draw maze
@@ -112,11 +107,8 @@ public:
         if (ch == HOME_CHAR){
           std::printf("%c", HOME);
         }
-        else if(ch == OUT_CHAR){
-          std::printf("%c", OUT_DOCK);
-        }
-        else if(ch == IN_CHAR){
-          std::printf("%c", IN_DOCK);
+        else if(ch == DOCK_CHAR){
+          std::printf("%c", DOCK);
         }
       }
     }
