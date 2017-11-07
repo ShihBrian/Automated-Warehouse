@@ -1,10 +1,6 @@
 #include "Order.h"
 #include "comm.h"
 
-
-
-
-
 int main(){
   cpen333::process::socket socket("localhost",55556);
   std::cout << "Client connecting...";
@@ -89,7 +85,7 @@ int main(){
         print_menu(mod_robot_menu);
         std::cin >> cmd;
         send_type(socket,MSG_MOD_ROBOT);
-        send_generic(socket,cmd,"Modify successful","Failed to modify");
+        send_generic(socket,cmd);
         break;
       case Popt::M_QUIT:
         quit = true;

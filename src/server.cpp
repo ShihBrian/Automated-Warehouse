@@ -10,6 +10,7 @@ CircularOrderQueue serve_queue;
 int nrobots = 4;
 
 //TODO: add manager option to shutdown server
+//TODO: add ability for server to respond with a success and fail string along with the byte
 void find_coordinates(MazeInfo info){
   char c;
   for(int col = 0; col < info.cols; col++){
@@ -31,6 +32,7 @@ void find_coordinates(MazeInfo info){
   }
 }
 
+//TODO: check for no robots or too many
 void modify_robots(bool add){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
@@ -135,7 +137,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
             safe_printf("Order successfully received\n");
             Orders = temp_Orders;
             temp_Orders.clear();
-            client.write(&SUCCESS_BYTE,1);
+            send_response(client,1,"Order successfully received");
             if(add_product) {
               add_product = false;
               inv.add_new_item(Orders[0].product,Orders[0].weight);
@@ -152,7 +154,7 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
           else{
             temp_Orders.clear();
             safe_printf("Order was not received\n");
-            client.write(&FAIL_BYTE,1);
+            send_response(client,1,"Order receive failed");
           }
           break;
         case MSG_INVENTORY:
@@ -172,16 +174,16 @@ void service(OrderQueue& orders, cpen333::process::socket client, int id, Invent
           if(msg == 1) {
             std::cout << "Adding Robot" << std::endl;
             modify_robots(1);
-            client.write(&SUCCESS_BYTE,1);
+            send_response(client,1,"Successfully added robot");
           }
           else if(msg == 2){
             std::cout << "Removing Robot" << std::endl;
             modify_robots(0);
-            client.write(&SUCCESS_BYTE,1);
+            send_response(client,1,"Successfully removed robot");
           }
           else{
             std::cout << "Modify robot invalid command" << std::endl;
-            client.write(&FAIL_BYTE,1);
+            send_response(client,1,"Invalid command");
           }
           break;
         case MSG_QUIT:

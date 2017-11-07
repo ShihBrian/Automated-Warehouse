@@ -49,12 +49,22 @@ void send_size(cpen333::process::socket& socket, size_t size){
   socket.write(size_buff,4);
 }
 
+char rcv_response(cpen333::process::socket& socket, std::string& msg){
+  char buff[256];
+  char success;
+  socket.read_all(&success,1);
+  int str_size = get_size(socket);
+  socket.read_all(buff,str_size);
+  msg = buff;
+  return success;
+}
+
 //TODO: send generic message
 void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket){
   const char* str;
   char success;
   size_t length;
-
+  std::string msg;
   size_t num_items = Orders.size();
   send_size(socket, num_items);
 
@@ -70,27 +80,33 @@ void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket
   send_type(socket,MSG_END);
 
   std::cout << "Send_order: Waiting for response...";
-  socket.read_all(&success, 1);
-  if(success==SUCCESS_BYTE){
-    Orders.clear();
-    std::cout << "Server received order\n";
-  }
-  else if(success==FAIL_BYTE) std::cout << "Server FAILED to receive order\n";
-  else std::cout << "Unknown response\n";
+  success = rcv_response(socket,msg);
+  std::cout << msg << std::endl;
+  if(success==SUCCESS_BYTE) Orders.clear();
 }
 
-void send_generic(cpen333::process::socket& socket, char data, std::string success_msg, std::string fail_msg){
-  char success;
+void send_response(cpen333::process::socket& socket, bool success, std::string msg){
+  const char* str;
+  size_t length;
 
+  if(success) socket.write(&SUCCESS_BYTE,1);
+  else socket.write(&FAIL_BYTE,1);
+  str = msg.c_str();
+  length = strlen(str)+1;
+  send_size(socket,length);
+  socket.write(str,length);
+}
+
+//TODO: do something with success bool
+void send_generic(cpen333::process::socket& socket, char data){
+  char success;
+  std::string msg;
   socket.write(&data,1);
 
   std::cout << "Send_generic: Waiting for response...";
-  socket.read_all(&success, 1);
-  if(success==SUCCESS_BYTE){
-    std::cout << success_msg;
-  }
-  else if(success==FAIL_BYTE) std::cout << fail_msg;
-  else std::cout << "Unknown response\n";
+  success = rcv_response(socket,msg);
+
+  std::cout << msg << std::endl;
 
 }
 
@@ -125,13 +141,13 @@ void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Ord
           if(order_size == 0){
             Orders = temp_Orders;
             temp_Orders.clear();
-            socket.write(&SUCCESS_BYTE,1);
+            send_response(socket,1,"Order successfully received");
             done = true;
           }
           else{
             temp_Orders.clear();
             safe_printf("Recv_inv: Order was not received\n");
-            socket.write(&FAIL_BYTE,1);
+            send_response(socket,1,"Order receive failed");
           }
           break;
         default:
