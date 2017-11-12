@@ -25,7 +25,6 @@ int main(){
   Orders.push_back(order);
 
   //TODO: View order status
-  //TODO: View shelf items
   //TODO: Test command, list of commands with expected returns
   while(!quit){
     print_menu(manager_menu);

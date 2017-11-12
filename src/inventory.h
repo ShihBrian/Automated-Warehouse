@@ -178,7 +178,6 @@ class Inventory {
       }
     }
 
-  //TODO: Add msg to get shelf info
     Order_item get_shelf_info(int col, int row){
       Order_item item;
       for(auto& shelf: shelves){

@@ -9,8 +9,7 @@ CircularOrderQueue incoming_queue;
 CircularOrderQueue outgoing_queue;
 int nrobots = 4;
 int num_docks;
-//TODO: add manager option to shutdown server
-//TODO: semaphore equal to number of docks, robots must wait for available dock
+
 void find_coordinates(WarehouseInfo& info){
   Coordinate dock;
   int count = 0;
@@ -42,18 +41,37 @@ void find_coordinates(WarehouseInfo& info){
   info.num_docks = count;
 }
 
-//TODO: check for no robots or too many
-void modify_robots(bool add){
+void modify_robots(bool add,cpen333::process::socket& client){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
   if(add){
-    nrobots++;
-    robots.push_back(new Robot(nrobots, incoming_queue, outgoing_queue));
-    robots[robots.size()-1]->start();
+    if(nrobots < MAX_ROBOTS) {
+      nrobots++;
+      robots.push_back(new Robot(nrobots, incoming_queue, outgoing_queue));
+      robots[robots.size()-1]->start();
+      send_response(client,1,"Successfully added robot");
+    }
+    else{
+      send_response(client,0,"Already at maximum number of robots");
+    }
   }
   else{
-    order.push_back(poison);
-    nrobots--;
+    if(nrobots > 0) {
+      order.push_back(poison);
+      nrobots--;
+      incoming_queue.add(order);
+      send_response(client,1,"Successfully removed robot");
+    }
+    else{
+      send_response(client,0,"There are no robots to remove");
+    }
+  }
+}
+
+void kill_robots(){
+  std::vector<Coordinate> order;
+  order.push_back({999,999});
+  for(int i=0;i<nrobots;i++){
     incoming_queue.add(order);
   }
 }
@@ -62,7 +80,7 @@ void modify_robots(bool add){
 void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   int col, row;
   std::vector<Coordinate> coordinates;
-  
+
   std::cout << "Incoming orders" << std::endl;
   for(auto& order:Orders){
     std::cout << order.product << " : " << order.quantity << std::endl;
@@ -185,13 +203,11 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           client.read(&msg,1);
           if(msg == 1) {
             std::cout << "Adding Robot" << std::endl;
-            modify_robots(1);
-            send_response(client,1,"Successfully added robot");
+            modify_robots(1,client);
           }
           else if(msg == 2){
             std::cout << "Removing Robot" << std::endl;
-            modify_robots(0);
-            send_response(client,1,"Successfully removed robot");
+            modify_robots(0,client);
           }
           else{
             std::cout << "Modify robot invalid command" << std::endl;
@@ -212,6 +228,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           break;
         case MSG_QUIT:
           quit = true;
+          kill_robots();
           break;
       }
     }
@@ -265,8 +282,6 @@ int main() {
     count++;
   }
 
-  server.close();
-
   for (auto& robot : robots) {
     robot->join();
   }
@@ -278,6 +293,7 @@ int main() {
     robot = nullptr;
   }
 
+  server.close();
   cpen333::pause();
 
   return 0;

@@ -49,7 +49,6 @@ void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 
 }
 
-//TODO: Find home position
 void init_runners(const WarehouseInfo& minfo, RobotInfo& rinfo) {
   rinfo.nrobot = 0;
 

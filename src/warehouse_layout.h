@@ -19,7 +19,8 @@
 
 #define MAX_WAREHOUSE_SIZE 80
 #define MAX_RUNNERS   50
-#define MAX_WAREHOUSE_DOCKS 10
+#define MAX_WAREHOUSE_DOCKS 8
+#define MAX_ROBOTS 10
 #define MAGIC 123654
 
 #define MAZE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\warehouse1.txt"
