@@ -18,9 +18,9 @@
 #define ROW_IDX 1
 
 #define MAX_WAREHOUSE_SIZE 80
-#define MAX_RUNNERS   50
 #define MAX_WAREHOUSE_DOCKS 8
 #define MAX_ROBOTS 10
+#define MAX_WORD_LENGTH 100
 #define MAGIC 123654
 
 #define MAZE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\warehouse1.txt"
@@ -39,7 +39,12 @@ struct WarehouseInfo {
 
 struct RobotInfo {
   int nrobot;      // number runners
-  int rloc[MAX_RUNNERS][2];   // runner locations [col][row]
+  int rloc[MAX_ROBOTS][2];   // runner locations [col][row]
+  int busy[MAX_ROBOTS];
+  int task[MAX_ROBOTS];
+  char product[MAX_ROBOTS][MAX_WORD_LENGTH];
+  int quantity[MAX_ROBOTS];
+  int dest[MAX_ROBOTS][2];
 };
 
 struct SharedData {

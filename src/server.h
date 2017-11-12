@@ -11,9 +11,8 @@
 #include "robot.h"
 #include "CircularOrderQueue.h"
 #include "warehouse_layout.h"
+#include "inventory.h"
 
-
-int end_col, end_row;
 Coordinate home;
 
 void load_maze(const std::string& filename, WarehouseInfo& minfo) {
@@ -61,7 +60,7 @@ void init_runners(const WarehouseInfo& minfo, RobotInfo& rinfo) {
     }
   }
 
-  for (size_t i=0; i<MAX_RUNNERS; ++i) {
+  for (size_t i=0; i<MAX_ROBOTS; ++i) {
     rinfo.rloc[i][COL_IDX] = home.col;
     rinfo.rloc[i][ROW_IDX] = home.row;
   }

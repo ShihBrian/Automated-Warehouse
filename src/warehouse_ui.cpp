@@ -15,15 +15,16 @@ class MazeUI {
   // display offset for better visibility
   static const int XOFF = 2;
   static const int YOFF = 1;
-
+  unsigned line_count = 0;
   cpen333::console display_;
   cpen333::process::shared_object<SharedData> memory_;
   cpen333::process::mutex mutex_;
 
   // previous positions of runners
-  int lastpos_[MAX_RUNNERS][2];
-  int exit_[2];   // exit location
-
+  int lastpos_[MAX_ROBOTS][2];
+  int home_[2];   // exit location
+  int dock[MAX_WAREHOUSE_DOCKS][2];
+  int num_docks;
 public:
 
   MazeUI() : display_(), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
@@ -33,24 +34,20 @@ public:
     display_.set_cursor_visible(false);
 
     // initialize last known runner positions
-    for (size_t i = 0; i<MAX_RUNNERS; ++i) {
+    for (size_t i = 0; i<MAX_ROBOTS; ++i) {
       lastpos_[i][COL_IDX] = -1;
       lastpos_[i][ROW_IDX] = -1;
     }
 
-    // initialize exit location
-    exit_[COL_IDX] = -1;
-    exit_[ROW_IDX] = -1;
+    home_[COL_IDX] = memory_->minfo.home_col;
+    home_[ROW_IDX] = memory_->minfo.home_row;
+    num_docks = memory_->minfo.num_docks;
 
-    for (int i = 0; i<memory_->minfo.rows; i++) {
-      for (int j = 0; j<memory_->minfo.cols; j++) {
-        if (memory_->minfo.warehouse[j][i] == EXIT_CHAR) {
-          exit_[COL_IDX] = j;
-          exit_[ROW_IDX] = i;
-          break;
-        }
-      }
+    for(int i=0;i<num_docks;i++){
+      dock[i][COL_IDX] = memory_->minfo.dock_col[i];
+      dock[i][ROW_IDX] = memory_->minfo.dock_row[i];
     }
+
   }
   /**
   * Draws the maze itself
@@ -122,27 +119,51 @@ public:
       else return 0;
     }
   }
+
+  void clear_log(){
+    char empty_line[] = "                                             ";
+    for(int i=0;i<15;i++){
+      display_.set_cursor_position(YOFF + i, XOFF + memory_->minfo.cols + 2);
+      std::printf("%s", empty_line);
+    }
+  }
   /**
   * Draws all runners in the maze
   */
   void draw_runners() {
-
     RobotInfo& rinfo = memory_->rinfo;
-
+    int newc, newr, busy, task, quantity;
+    int dest[2];
+    char product[MAX_ROBOTS][MAX_WORD_LENGTH];
+    int count = 0;
+    bool isdock = false;
     // draw all runner locations
     for (size_t i = 0; i<rinfo.nrobot; ++i) {
       char me = 'A'+i;
-      int newc;
-      int newr;
 
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         newr = rinfo.rloc[i][ROW_IDX];
         newc = rinfo.rloc[i][COL_IDX];
+        busy = rinfo.busy[i];
+        task = rinfo.task[i];
+        while(rinfo.product[i][count] != '\0'){
+          product[i][count] = rinfo.product[i][count];
+          count++;
+        }
+        product[i][count] = '\0';
+        count = 0;
+        quantity = rinfo.quantity[i];
+        dest[COL_IDX] = rinfo.dest[i][COL_IDX];
+        dest[ROW_IDX] = rinfo.dest[i][ROW_IDX];
       }
 
-      // if not already at the exit...
-      if (newc != exit_[COL_IDX] || newr != exit_[ROW_IDX]) {
+      if(line_count > 10) {
+        line_count = 0;
+        this->clear_log();
+      }
+
+      if(busy) {
         if (newc != lastpos_[i][COL_IDX]
             || newr != lastpos_[i][ROW_IDX]) {
 
@@ -151,26 +172,47 @@ public:
           std::printf("%c", EMPTY_CHAR);
           lastpos_[i][COL_IDX] = newc;
           lastpos_[i][ROW_IDX] = newr;
+
+          display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
+          if ((newc == home_[COL_IDX] && newr == home_[ROW_IDX])) {
+            // display a completion message
+            line_count++;
+            std::printf("Robot %c home", me);
+          }
+          else if(newc == dest[COL_IDX] && newr == dest[ROW_IDX]){
+            isdock = false;
+            for(int i=0;i<num_docks;i++){
+              if (dock[i][COL_IDX] == dest[COL_IDX] && dock[i][ROW_IDX] == dest[ROW_IDX]){
+                line_count++;
+                std::printf("Robot %c at dock %d",me,i);
+                isdock = true;
+                break;
+              }
+            }
+            if(!isdock){
+              line_count++;
+              std::printf("Robot %c at shelf with %d %s",me, quantity, product[i]);
+            }
+          }
         }
-
-        // print runner at new locationrinfo
-        display_.set_cursor_position(YOFF + newr, XOFF + newc);
-        std::printf("%c", me);
-      }/*
+        /*
       else {
-
-        // erase old position if now finished
-        if (lastpos_[i][COL_IDX] != exit_[COL_IDX] || lastpos_[i][ROW_IDX] != exit_[ROW_IDX]) {
-          display_.set_cursor_position(YOFF + lastpos_[i][ROW_IDX], XOFF + lastpos_[i][COL_IDX]);
-          std::printf("%c", EMPTY_CHAR);
-          lastpos_[i][COL_IDX] = newc;
-          lastpos_[i][ROW_IDX] = newr;
-
-          // display a completion message
-          display_.set_cursor_position(YOFF, XOFF + memory_->minfo.cols + 2);
+        for (int i = 0; i < num_docks; i++) {
+          if (newc == dock[i][COL_IDX] && newr == dock[i][ROW_IDX]) {
+            display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
+            line_count++;
+            std::printf("Robot %c at dock %d", me, i);
+          }
         }
       }
-      */
+         */
+      }
+
+      // print runner at new locationrinfo
+      display_.set_cursor_position(YOFF + newr, XOFF + newc);
+      std::printf("%c", me);
+
+
     }
   }
 
@@ -205,7 +247,7 @@ int main() {
   while (!ui.quit()) {
     ui.draw_runners();
     ui.draw_objects();
-    std::this_thread::sleep_for(std::chrono::milliseconds(80));
+    std::this_thread::sleep_for(std::chrono::milliseconds(60));
   }
 
   return 0;

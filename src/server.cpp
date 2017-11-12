@@ -1,7 +1,6 @@
 #include "server.h"
 #include "Order.h"
 #include "comm.h"
-#include "inventory.h"
 
 
 std::vector<Robot*> robots;
@@ -99,11 +98,12 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
     for (auto &order:Orders) {
       //list of coordinates the robot must visit in order to fulfil an order
       coordinates = inv.get_available_shelf(order);
-
       std::cout << "Shelf location for " << order.product << std::endl;
       for(auto& coordinate:coordinates){
         std::cout << coordinate.col << " " << coordinate.row << std::endl;
       }
+      coordinates[0].product = order.product;
+      coordinates[0].quantity = order.quantity;
       incoming_queue.add(coordinates);
       coordinates.clear();
     }
@@ -234,7 +234,6 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
   }
 }
 
-//TODO: Spawn delivery and restocking trucks
 int main() {
   // read warehouse from command-line, default to maze0
   std::string maze = MAZE_NAME;
