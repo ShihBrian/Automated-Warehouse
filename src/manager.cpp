@@ -10,7 +10,7 @@ int main(){
     std::cout << "connected." << std::endl;
   }
 
-  int cmd;
+  int cmd,col,row;
   bool quit = false;
   int weight;
   std::vector<Order_item> product_list;
@@ -25,6 +25,8 @@ int main(){
   Orders.push_back(order);
 
   //TODO: View order status
+  //TODO: View shelf items
+  //TODO: Test command, list of commands with expected returns
   while(!quit){
     print_menu(manager_menu);
     std::cin >> cmd;
@@ -85,7 +87,20 @@ int main(){
         print_menu(mod_robot_menu);
         std::cin >> cmd;
         send_type(socket,MSG_MOD_ROBOT);
-        send_generic(socket,cmd);
+        send_generic(socket,cmd,true);
+        break;
+      case Popt::M_SHELF_INFO:
+        std::cout << "Enter shelf column: " << std::endl;
+        std::cin >> col;
+        std::cout << "Enter shelf row: " << std::endl;
+        std::cin >> row;
+        send_type(socket,MSG_SHELF_INFO);
+        send_generic(socket,col,false);
+        send_generic(socket,row,false);
+        receive_inv(socket,Orders);
+        if(Orders[0].product == "N/A") std::cout << "Not a valid shelf location" << std::endl;
+        else std::cout << Orders[0].product << " " << Orders[0].quantity << std::endl;
+        Orders.clear();
         break;
       case Popt::M_QUIT:
         quit = true;

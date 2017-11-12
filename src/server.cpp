@@ -45,7 +45,6 @@ void find_coordinates(WarehouseInfo& info){
       }
     }
   }
-  std::cout << "Count " << count << std::endl;
   info.num_docks = count;
 }
 
@@ -90,6 +89,7 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
     else std::cout << "Not enough stock" << std::endl;
   } else { //restocking
     for (auto &order:Orders) {
+      //list of coordinates the robot must visit in order to fulfil an order
       coordinates = inv.get_available_shelf(order,home);
       std::cout << "Shelf location for " << order.product << std::endl;
       for(auto& coordinate:coordinates){
@@ -117,7 +117,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
   int str_size;
   char buff[256];
   std::string product;
-
+  Coordinate shelf;
   while(!quit) {
     client.read_all(&msg, 1);
     if(msg==START_BYTE) {
@@ -206,6 +206,18 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
             send_response(client,1,"Invalid command");
           }
           break;
+        case MSG_SHELF_INFO:
+          client.read(&msg,1);
+          shelf.col = msg;
+          client.read(&msg,1);
+          shelf.row = msg;
+          order = inv.get_shelf_info(shelf.col,shelf.row);
+          temp_Orders.clear();
+          temp_Orders.push_back(order);
+          send_type(client,MSG_SERVER);
+          send_order(temp_Orders,client);
+          temp_Orders.clear();
+          break;
         case MSG_QUIT:
           quit = true;
           break;
@@ -233,7 +245,6 @@ int main() {
 
 
   num_docks = memory->minfo.num_docks;
-  std::cout << "Number of docks " << num_docks << std::endl;
   cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME,num_docks);
 
   Inventory inv(info);

@@ -15,12 +15,14 @@ struct Order_item{
 struct Shelf {
   int col = 0;
   int row = 0;
+  int robot_col = 0;
+  int robot_row = 0;
   std::string product = "";
   int quantity = 0;
   int weight = 0;
 };
 
-//TODO: function to return shelves to visit to fulfill order
+//TODO: function to return shelves to visit to fulfill order, opposite of get available shelves
 class Inventory {
   //TODO: Add thread safety
   std::vector <Shelf> shelves;
@@ -36,25 +38,24 @@ class Inventory {
         for (int c = 0; c < minfo.cols; c++) {
           if (minfo.warehouse[c][r] == SHELF_CHAR) {
             if (c > 0 && minfo.warehouse[c - 1][r] == EMPTY_CHAR){
-              shelf.col = c-1;
-              shelf.row = r;
-              shelves.push_back(shelf);
+              shelf.robot_col = c-1;
+              shelf.robot_row = r;
             }
             else if (c < minfo.cols && minfo.warehouse[c + 1][r] == EMPTY_CHAR){
-              shelf.col = c+1;
-              shelf.row = r;
-              shelves.push_back(shelf);
+              shelf.robot_col = c+1;
+              shelf.robot_row = r;
             }
             else if (r > 0 && minfo.warehouse[c][r - 1] == EMPTY_CHAR){
-              shelf.col = c;
-              shelf.row = r-1;
-              shelves.push_back(shelf);
+              shelf.robot_col = c;
+              shelf.robot_row = r-1;
             }
             else if (r < minfo.rows && minfo.warehouse[c][r + 1] == EMPTY_CHAR){
-              shelf.col = c;
-              shelf.row = r+1;
-              shelves.push_back(shelf);
+              shelf.robot_col = c;
+              shelf.robot_row = r+1;
             }
+            shelf.col = c;
+            shelf.row = r;
+            shelves.push_back(shelf);
           }
         }
       }
@@ -111,8 +112,8 @@ class Inventory {
             shelf.quantity += quantity;
             shelf.product = order.product;
             shelf.weight += quantity*weight;
-            coordinate.col = shelf.col;
-            coordinate.row = shelf.row;
+            coordinate.col = shelf.robot_col;
+            coordinate.row = shelf.robot_row;
 
             iterations = std::ceil((quantity*weight)/((double)ROBOT_MAX_WEIGHT));
             for(int i=0;i<iterations;i++) {
@@ -130,8 +131,8 @@ class Inventory {
     void find_product(int& col, int& row, std::string product){
       for(auto& shelf:shelves){
         if (shelf.product == product){
-          col = shelf.col;
-          row = shelf.row;
+          col = shelf.robot_col;
+          row = shelf.robot_row;
           break;
         }
       }
@@ -190,6 +191,8 @@ class Inventory {
         }
       }
       item.product = "N/A";
+      item.quantity = 0;
+      item.weight = 0;
       return item;
     }
 

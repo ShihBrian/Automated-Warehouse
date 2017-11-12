@@ -10,7 +10,8 @@
 
 std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order"};
 std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Restocking Truck","View Order Status",
-                                         "View Inventory","Add New Product","Remove Product","Add/Remove Robots"};
+                                         "View Inventory","Add New Product","Remove Product","Add/Remove Robots",
+                                         "Show Shelf Info"};
 std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot", "Modify Max Weight"};
 
 enum Copt {
@@ -31,6 +32,7 @@ enum Popt {
   M_ADD_NEW_PROD,
   M_REMOVE_PROD,
   M_MOD_ROBOT,
+  M_SHELF_INFO,
   M_QUIT
 };
 

@@ -19,6 +19,7 @@ enum MessageType {
   MSG_REMOVE,
   MSG_SERVER,
   MSG_MOD_ROBOT,
+  MSG_SHELF_INFO,
   MSG_QUIT
 };
 
@@ -98,16 +99,17 @@ void send_response(cpen333::process::socket& socket, bool success, std::string m
 }
 
 //TODO: do something with success bool
-void send_generic(cpen333::process::socket& socket, char data){
+void send_generic(cpen333::process::socket& socket, char data, bool response){
   char success;
   std::string msg;
   socket.write(&data,1);
 
-  std::cout << "Send_generic: Waiting for response...";
-  success = rcv_response(socket,msg);
+  if(response) {
+    std::cout << "Send_generic: Waiting for response...";
+    success = rcv_response(socket, msg);
 
-  std::cout << msg << std::endl;
-
+    std::cout << msg << std::endl;
+  }
 }
 
 void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Orders){
@@ -127,6 +129,7 @@ void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Ord
       switch (type) {
         case MSG_SERVER:
           order_size = get_size(socket);
+          std::cout << order_size << std::endl;
           break;
         case MSG_ITEM:
           order_size--;
@@ -136,6 +139,7 @@ void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Ord
           product = buff;
           order.product = product;
           temp_Orders.push_back(order);
+        std::cout << order.product << " " << order.quantity << std::endl;
           break;
         case MSG_END:
           if(order_size == 0){
