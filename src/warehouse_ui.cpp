@@ -44,7 +44,7 @@ public:
 
     for (int i = 0; i<memory_->minfo.rows; i++) {
       for (int j = 0; j<memory_->minfo.cols; j++) {
-        if (memory_->minfo.maze[j][i] == EXIT_CHAR) {
+        if (memory_->minfo.warehouse[j][i] == EXIT_CHAR) {
           exit_[COL_IDX] = j;
           exit_[ROW_IDX] = i;
           break;
@@ -62,15 +62,15 @@ public:
     static const char SHELF = 83;
     static const char DOCK = 68;
     WarehouseInfo& minfo = memory_->minfo;
-    RunnerInfo& rinfo = memory_->rinfo;
+    RobotInfo& rinfo = memory_->rinfo;
 
     // clear display
     display_.clear_display();
-    // draw maze
+    // draw warehouse
     for (int r = 0; r < minfo.rows; ++r) {
       display_.set_cursor_position(YOFF + r, XOFF);
       for (int c = 0; c < minfo.cols; ++c) {
-        char ch = minfo.maze[c][r];
+        char ch = minfo.warehouse[c][r];
         if (ch == WALL_CHAR) {
           std::printf("%c", WALL);
         }
@@ -97,13 +97,13 @@ public:
     static const char HOME = 72;  // EXIT character
     static const char DOCK = 68;
     WarehouseInfo& minfo = memory_->minfo;
-    RunnerInfo& rinfo = memory_->rinfo;
+    RobotInfo& rinfo = memory_->rinfo;
 
-    // draw maze
+    // draw warehouse
     for (int r = 0; r < minfo.rows; ++r) {
       for (int c = 0; c < minfo.cols; ++c) {
         display_.set_cursor_position(YOFF + r, XOFF+c);
-        char ch = minfo.maze[c][r];
+        char ch = minfo.warehouse[c][r];
         if (ch == HOME_CHAR){
           std::printf("%c", HOME);
         }
@@ -127,10 +127,10 @@ public:
   */
   void draw_runners() {
 
-    RunnerInfo& rinfo = memory_->rinfo;
+    RobotInfo& rinfo = memory_->rinfo;
 
     // draw all runner locations
-    for (size_t i = 0; i<rinfo.nrunners; ++i) {
+    for (size_t i = 0; i<rinfo.nrobot; ++i) {
       char me = 'A'+i;
       int newc;
       int newr;

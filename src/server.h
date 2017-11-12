@@ -24,7 +24,7 @@ void load_maze(const std::string& filename, WarehouseInfo& minfo) {
   std::ifstream fin(filename);
   std::string line;
 
-  // read maze file
+  // read warehouse file
   if (fin.is_open()) {
     int row = 0;  // zeroeth row
     while (std::getline(fin, line)) {
@@ -35,7 +35,7 @@ void load_maze(const std::string& filename, WarehouseInfo& minfo) {
           minfo.cols = cols;
         }
         for (size_t col=0; col<cols; ++col) {
-          minfo.maze[col][row] = line[col];
+          minfo.warehouse[col][row] = line[col];
           minfo.visited[col][row] = 0;
         }
         ++row;
@@ -49,8 +49,8 @@ void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 }
 
 //TODO: Find home position
-void init_runners(const WarehouseInfo& minfo, RunnerInfo& rinfo) {
-  rinfo.nrunners = 0;
+void init_runners(const WarehouseInfo& minfo, RobotInfo& rinfo) {
+  rinfo.nrobot = 0;
   // fill in random placements for future runners
   for (size_t i=0; i<MAX_RUNNERS; ++i) {
     rinfo.rloc[i][COL_IDX] = 1;

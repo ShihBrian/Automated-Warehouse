@@ -10,6 +10,7 @@
 #include "warehouse_layout.h"
 #include <cpen333/process/shared_memory.h>
 #include <cpen333/process/mutex.h>
+#include <cpen333/process/semaphore.h>
 
 /**
  * The Robot grabs orders from a queue, cooks them,
@@ -22,8 +23,9 @@ class Robot : public cpen333::thread::thread_object {
   int id_;
   cpen333::process::shared_object<SharedData> memory_;
   cpen333::process::mutex mutex_;
+  cpen333::process::semaphore docks_semaphore;
   std::deque<std::pair<int,int>> path;
-  // local copy of maze
+  // local copy of warehouse
   WarehouseInfo minfo_;
   int end_col = 0;
   int end_row = 0;
@@ -40,16 +42,16 @@ class Robot : public cpen333::thread::thread_object {
    */
   Robot(int id, OrderQueue& orders, OrderQueue& serve) :
       id_(id), orders_(orders), serve_(serve),memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME),
-      minfo_(), idx_(0), loc_()
+      minfo_(), idx_(0), loc_(), docks_semaphore(DOCKS_SEMAPHORE_NAME)
   {
-    // copy maze contents
+    // copy warehouse contents
     minfo_ = memory_->minfo;
 
     {
       // protect access of number of runners
       std::lock_guard<decltype(mutex_)> lock(mutex_);
-      idx_ = memory_->rinfo.nrunners;
-      memory_->rinfo.nrunners++;
+      idx_ = memory_->rinfo.nrobot;
+      memory_->rinfo.nrobot++;
     }
 
     // get current location
@@ -91,16 +93,16 @@ class Robot : public cpen333::thread::thread_object {
       return true;
     }
     // Recursively search for our goal.
-    if (col > 0 && (minfo_.maze[col - 1][row] != WALL_CHAR && minfo_.maze[col - 1][row] != SHELF_CHAR) && minfo_.visited[col - 1][row] == 0 && this->find_path(col - 1, row)) {
+    if (col > 0 && (minfo_.warehouse[col - 1][row] != WALL_CHAR && minfo_.warehouse[col - 1][row] != SHELF_CHAR) && minfo_.visited[col - 1][row] == 0 && this->find_path(col - 1, row)) {
       return true;
     }
-    if (col < minfo_.cols && (minfo_.maze[col + 1][row] != WALL_CHAR && minfo_.maze[col + 1][row] != SHELF_CHAR) && minfo_.visited[col + 1][row] == 0 && this->find_path(col + 1, row)) {
+    if (col < minfo_.cols && (minfo_.warehouse[col + 1][row] != WALL_CHAR && minfo_.warehouse[col + 1][row] != SHELF_CHAR) && minfo_.visited[col + 1][row] == 0 && this->find_path(col + 1, row)) {
       return true;
     }
-    if (row > 0 && (minfo_.maze[col][row - 1] != WALL_CHAR && minfo_.maze[col][row - 1] != SHELF_CHAR) && minfo_.visited[col][row - 1] == 0 && this->find_path(col, row - 1)) {
+    if (row > 0 && (minfo_.warehouse[col][row - 1] != WALL_CHAR && minfo_.warehouse[col][row - 1] != SHELF_CHAR) && minfo_.visited[col][row - 1] == 0 && this->find_path(col, row - 1)) {
       return true;
     }
-    if (row < minfo_.rows && (minfo_.maze[col][row + 1] != WALL_CHAR && minfo_.maze[col][row + 1] != SHELF_CHAR) && minfo_.visited[col][row + 1] == 0 && this->find_path(col, row + 1)) {
+    if (row < minfo_.rows && (minfo_.warehouse[col][row + 1] != WALL_CHAR && minfo_.warehouse[col][row + 1] != SHELF_CHAR) && minfo_.visited[col][row + 1] == 0 && this->find_path(col, row + 1)) {
       return true;
     }
 
@@ -127,8 +129,39 @@ class Robot : public cpen333::thread::thread_object {
     return id_;
   }
 
+  void parse_coordinate(std::vector<Coordinate>& orders){
+    Coordinate dock;
+    int curr_dock;
+
+    docks_semaphore.wait();
+    {
+      std::lock_guard<decltype(mutex_)> lock(mutex_);
+      curr_dock = memory_->minfo.curr_dock;
+      if(curr_dock < memory_->minfo.num_docks) {
+        dock = memory_->minfo.docks[curr_dock];
+        memory_->minfo.curr_dock++;
+      }
+    }
+
+    for(auto& order : orders){
+      if(order.col == -1 && order.row == -1){
+        order.col = dock.col;
+        order.row = dock.row;
+      }
+    }
+  }
+
+  void order_finish(){
+    {
+      std::lock_guard<decltype(mutex_)> lock(mutex_);
+      memory_->minfo.curr_dock--;
+    }
+    docks_semaphore.notify();
+  }
+
   //TODO: Get stock from truck or move stock to delivery truck depending on order
   //TODO: Add loading dock and shipping dock
+  //TODO: pass list of docks to robot, find first available dock, insert b/w every element of vector
   int main() {
     bool quit = false;
     char cmd = 0;
@@ -143,11 +176,13 @@ class Robot : public cpen333::thread::thread_object {
     std::vector<Coordinate> orders;
     while (!quit) {
       orders = orders_.get();
+      this->parse_coordinate(orders);
       for (auto &order:orders) {
         if (order.row == 999 && order.col == 999) {
           quit = true;
           break;
         }
+
         end_col = order.col;
         end_row = order.row;
         if (this->find_path(x, y)) {
@@ -158,10 +193,8 @@ class Robot : public cpen333::thread::thread_object {
           safe_printf("Failed to find destination\n");
         }
       }
-
-
+      this->order_finish();
     }
-
     safe_printf("Robot %d done\n", id_);
 
     return 0;

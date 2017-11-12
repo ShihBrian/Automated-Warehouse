@@ -3,33 +3,34 @@
 #include "comm.h"
 #include "inventory.h"
 
-Coordinate home, out_dock, in_dock;
+Coordinate home;
 std::vector<Robot*> robots;
 CircularOrderQueue incoming_queue;
 CircularOrderQueue outgoing_queue;
 int nrobots = 4;
-
+int num_docks;
 //TODO: add manager option to shutdown server
-
-void find_coordinates(WarehouseInfo info){
+//TODO: semaphore equal to number of docks, robots must wait for available dock
+void find_coordinates(WarehouseInfo& info){
   char c;
+  Coordinate dock;
+  int count = 0;
   for(int col = 0; col < info.cols; col++){
     for(int row = 0; row < info.rows; row++){
-      c = info.maze[col][row];
+      c = info.warehouse[col][row];
       if(c == 'H'){
         home.col = col;
         home.row = row;
       }
-      else if(c == 'I'){
-        in_dock.col = col;
-        in_dock.row = row;
-      }
-      else if(c == 'O'){
-        out_dock.col = col;
-        out_dock.row = row;
+      else if(c == 'D'){
+        dock.col = col;
+        dock.row = row;
+        info.docks[count] = dock;
+        count++;
       }
     }
   }
+  info.num_docks = count;
 }
 
 //TODO: check for no robots or too many
@@ -73,7 +74,7 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
     else std::cout << "Not enough stock" << std::endl;
   } else { //restocking
     for (auto &order:Orders) {
-      coordinates = inv.get_available_shelf(order,home,in_dock);
+      coordinates = inv.get_available_shelf(order,home);
       std::cout << "Shelf location for " << order.product << std::endl;
       for(auto& coordinate:coordinates){
         std::cout << coordinate.col << " " << coordinate.row << std::endl;
@@ -199,13 +200,13 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
 
 //TODO: Spawn delivery and restocking trucks
 int main() {
-  // read maze from command-line, default to maze0
+  // read warehouse from command-line, default to maze0
   std::string maze = MAZE_NAME;
 
   cpen333::process::shared_object<SharedData> memory(MAZE_MEMORY_NAME);
   cpen333::process::mutex mutex1(MAZE_MUTEX_NAME);
   WarehouseInfo info;
-  RunnerInfo runners;
+  RobotInfo runners;
   load_maze(maze, info);
   init_runners(info, runners);
 
@@ -215,6 +216,9 @@ int main() {
   memory->magic = MAGIC;
 
   find_coordinates(info);
+  num_docks = memory->minfo.num_docks;
+
+  cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME,num_docks);
 
   Inventory inv(info);
   inv.init_inv();

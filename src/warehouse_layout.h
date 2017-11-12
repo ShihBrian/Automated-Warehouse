@@ -1,8 +1,11 @@
 #ifndef LAB4_MAZE_RUNNER_COMMON_H
 #define LAB4_MAZE_RUNNER_COMMON_H
 
+#include "OrderQueue.h"
+
 #define MAZE_MEMORY_NAME "lab4_maze_runner"
 #define MAZE_MUTEX_NAME "lab4_maze_runner_mutex"
+#define DOCKS_SEMAPHORE_NAME "docks_semaphore"
 
 #define WALL_CHAR 'X'
 #define EMPTY_CHAR ' '
@@ -18,25 +21,28 @@
 
 #define MAX_WAREHOUSE_SIZE 80
 #define MAX_RUNNERS   50
-
+#define MAX_WAREHOUSE_DOCKS 10
 #define MAGIC 123654
 
 #define MAZE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\warehouse1.txt"
 struct WarehouseInfo {
-  int rows;           // rows in maze
-  int cols;           // columns in maze
-  char maze[MAX_WAREHOUSE_SIZE][MAX_WAREHOUSE_SIZE];  // maze storage
+  int rows;           // rows in warehouse
+  int cols;           // columns in warehouse
+  char warehouse[MAX_WAREHOUSE_SIZE][MAX_WAREHOUSE_SIZE];  // warehouse storage
   char visited[MAX_WAREHOUSE_SIZE][MAX_WAREHOUSE_SIZE];
+  Coordinate docks[MAX_WAREHOUSE_DOCKS];
+  int curr_dock = 0;
+  int num_docks;
 };
 
-struct RunnerInfo {
-  int nrunners;      // number runners
+struct RobotInfo {
+  int nrobot;      // number runners
   int rloc[MAX_RUNNERS][2];   // runner locations [col][row]
 };
 
 struct SharedData {
-  WarehouseInfo minfo;    // maze info
-  RunnerInfo rinfo;  // runner info
+  WarehouseInfo minfo;    // warehouse info
+  RobotInfo rinfo;  // runner info
   bool quit;         // tell everyone to quit
   int magic;
 };

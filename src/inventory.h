@@ -34,23 +34,23 @@ class Inventory {
     Inventory(WarehouseInfo &maze) : minfo(maze) {
       for (int r = 0; r < minfo.rows; r++) {
         for (int c = 0; c < minfo.cols; c++) {
-          if (minfo.maze[c][r] == SHELF_CHAR) {
-            if (c > 0 && minfo.maze[c - 1][r] == EMPTY_CHAR){
+          if (minfo.warehouse[c][r] == SHELF_CHAR) {
+            if (c > 0 && minfo.warehouse[c - 1][r] == EMPTY_CHAR){
               shelf.col = c-1;
               shelf.row = r;
               shelves.push_back(shelf);
             }
-            else if (c < minfo.cols && minfo.maze[c + 1][r] == EMPTY_CHAR){
+            else if (c < minfo.cols && minfo.warehouse[c + 1][r] == EMPTY_CHAR){
               shelf.col = c+1;
               shelf.row = r;
               shelves.push_back(shelf);
             }
-            else if (r > 0 && minfo.maze[c][r - 1] == EMPTY_CHAR){
+            else if (r > 0 && minfo.warehouse[c][r - 1] == EMPTY_CHAR){
               shelf.col = c;
               shelf.row = r-1;
               shelves.push_back(shelf);
             }
-            else if (r < minfo.rows && minfo.maze[c][r + 1] == EMPTY_CHAR){
+            else if (r < minfo.rows && minfo.warehouse[c][r + 1] == EMPTY_CHAR){
               shelf.col = c;
               shelf.row = r+1;
               shelves.push_back(shelf);
@@ -91,11 +91,12 @@ class Inventory {
       }
     }
 
-    std::vector<Coordinate> get_available_shelf(Order_item order, Coordinate home, Coordinate dock){
+    std::vector<Coordinate> get_available_shelf(Order_item order, Coordinate home){
       int row, col, weight, quantity, remaining_weight, iterations;
       Coordinate coordinate;
       std::vector<Coordinate> coordinates;
       weight = get_weight(order.product);
+      Coordinate temp = {-1,-1};
       for(auto& shelf:shelves){
         if (shelf.product == order.product || shelf.quantity == 0){
           remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
@@ -115,7 +116,7 @@ class Inventory {
 
             iterations = std::ceil((quantity*weight)/((double)ROBOT_MAX_WEIGHT));
             for(int i=0;i<iterations;i++) {
-              coordinates.push_back(dock);
+              coordinates.push_back(temp);
               coordinates.push_back(coordinate);
             }
             if(order.quantity == 0) break;
