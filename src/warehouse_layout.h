@@ -32,6 +32,8 @@ struct WarehouseInfo {
   unsigned dock_row[MAX_WAREHOUSE_DOCKS];
   int curr_dock = 0;
   int num_docks;
+  unsigned home_row;
+  unsigned home_col;
 };
 
 struct RobotInfo {

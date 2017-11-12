@@ -29,6 +29,7 @@ class Robot : public cpen333::thread::thread_object {
   WarehouseInfo minfo_;
   int end_col = 0;
   int end_row = 0;
+  Coordinate home;
   std::tuple<int,int> coordinates;
   // runner info
   size_t idx_;   // runner index
@@ -52,6 +53,8 @@ class Robot : public cpen333::thread::thread_object {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       idx_ = memory_->rinfo.nrobot;
       memory_->rinfo.nrobot++;
+      home.col = memory_->minfo.home_col;
+      home.row = memory_->minfo.home_row;
     }
 
     // get current location
@@ -151,6 +154,7 @@ class Robot : public cpen333::thread::thread_object {
         order.row = dock.row;
       }
     }
+    orders.push_back({home.row,home.col});
   }
 
   void order_finish(){
@@ -166,8 +170,6 @@ class Robot : public cpen333::thread::thread_object {
   int main() {
     bool quit = false;
     char cmd = 0;
-    int home_col = 1;
-    int home_row = 18;
     if (!(this->check_magic())) {
       safe_printf("Shared memory not initialized\n");
       return 0;

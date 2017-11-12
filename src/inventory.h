@@ -92,7 +92,7 @@ class Inventory {
       }
     }
 
-    std::vector<Coordinate> get_available_shelf(Order_item order, Coordinate home){
+    std::vector<Coordinate> get_available_shelf(Order_item order){
       int row, col, weight, quantity, remaining_weight, iterations;
       Coordinate coordinate;
       std::vector<Coordinate> coordinates;
@@ -124,7 +124,6 @@ class Inventory {
           }
         }
       }
-      coordinates.push_back(home);
       return coordinates;
     }
 

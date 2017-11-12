@@ -14,6 +14,7 @@
 
 
 int end_col, end_row;
+Coordinate home;
 
 void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 
@@ -51,10 +52,19 @@ void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 //TODO: Find home position
 void init_runners(const WarehouseInfo& minfo, RobotInfo& rinfo) {
   rinfo.nrobot = 0;
-  // fill in random placements for future runners
+
+  for(int col = 0; col < minfo.cols; col++) {
+    for (int row = 0; row < minfo.rows; row++) {
+      if(minfo.warehouse[col][row] == 'H'){
+        home.col = col;
+        home.row = row;
+      }
+    }
+  }
+
   for (size_t i=0; i<MAX_RUNNERS; ++i) {
-    rinfo.rloc[i][COL_IDX] = 1;
-    rinfo.rloc[i][ROW_IDX] = 18;
+    rinfo.rloc[i][COL_IDX] = home.col;
+    rinfo.rloc[i][ROW_IDX] = home.row;
   }
 }
 

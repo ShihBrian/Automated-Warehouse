@@ -1,6 +1,8 @@
 #include "Order.h"
 #include "comm.h"
 
+
+//TODO: view inventory
 int main(){
   cpen333::process::socket socket("localhost",55556);
   std::cout << "Client connecting...";

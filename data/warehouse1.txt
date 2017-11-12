@@ -7,7 +7,7 @@ X S S S S S X
 X S S S S S X
 X S S S S S X
 D S S S S S X
-D           X
+D     H     X
 D S S S S S X
 X S S S S S X
 X S S S S S X
@@ -16,5 +16,5 @@ X S S S S S X
 X S S S S S X
 X S S S S S X
 X S S S S S X
-XH          X
+X           X
 XXXXXXXXXXXXX

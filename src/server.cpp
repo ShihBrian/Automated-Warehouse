@@ -3,7 +3,7 @@
 #include "comm.h"
 #include "inventory.h"
 
-Coordinate home;
+
 std::vector<Robot*> robots;
 CircularOrderQueue incoming_queue;
 CircularOrderQueue outgoing_queue;
@@ -12,18 +12,12 @@ int num_docks;
 //TODO: add manager option to shutdown server
 //TODO: semaphore equal to number of docks, robots must wait for available dock
 void find_coordinates(WarehouseInfo& info){
-  char c;
   Coordinate dock;
   int count = 0;
   for(int col = 0; col < info.cols; col++){
     for(int row = 0; row < info.rows; row++){
-      c = info.warehouse[col][row];
-      if(c == 'H'){
-        home.col = col;
-        home.row = row;
-      }
-      else if(c == 'D'){
-        if (c > 0 && info.warehouse[col - 1][row] == EMPTY_CHAR){
+      if(info.warehouse[col][row] == 'D'){
+        if (col > 0 && info.warehouse[col - 1][row] == EMPTY_CHAR){
           dock.col = col-1;
           dock.row = row;
         }
@@ -68,9 +62,7 @@ void modify_robots(bool add){
 void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   int col, row;
   std::vector<Coordinate> coordinates;
-
-  home.col = 1;
-  home.row = 18;
+  
   std::cout << "Incoming orders" << std::endl;
   for(auto& order:Orders){
     std::cout << order.product << " : " << order.quantity << std::endl;
@@ -90,7 +82,7 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   } else { //restocking
     for (auto &order:Orders) {
       //list of coordinates the robot must visit in order to fulfil an order
-      coordinates = inv.get_available_shelf(order,home);
+      coordinates = inv.get_available_shelf(order);
       std::cout << "Shelf location for " << order.product << std::endl;
       for(auto& coordinate:coordinates){
         std::cout << coordinate.col << " " << coordinate.row << std::endl;
@@ -238,11 +230,12 @@ int main() {
   load_maze(maze, info);
   init_runners(info, runners);
   find_coordinates(info);
+  info.home_col = home.col;
+  info.home_row = home.row;
   memory->minfo = info;
   memory->rinfo = runners;
   memory->quit = 0;
   memory->magic = MAGIC;
-
 
   num_docks = memory->minfo.num_docks;
   cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME,num_docks);
@@ -250,7 +243,6 @@ int main() {
   Inventory inv(info);
   inv.init_inv();
 
-  //TODO: Add or remove robots dynamically
   for (int i=0; i<nrobots; ++i) {
     robots.push_back(new Robot(i, incoming_queue, outgoing_queue));
   }
