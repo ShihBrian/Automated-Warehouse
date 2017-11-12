@@ -23,13 +23,29 @@ void find_coordinates(WarehouseInfo& info){
         home.row = row;
       }
       else if(c == 'D'){
-        dock.col = col;
-        dock.row = row;
-        info.docks[count] = dock;
+        if (c > 0 && info.warehouse[col - 1][row] == EMPTY_CHAR){
+          dock.col = col-1;
+          dock.row = row;
+        }
+        else if (col < info.cols && info.warehouse[col + 1][row] == EMPTY_CHAR){
+          dock.col = col+1;
+          dock.row = row;
+        }
+        else if (row > 0 && info.warehouse[col][row - 1] == EMPTY_CHAR){
+          dock.col = col;
+          dock.row = row-1;
+        }
+        else if (row < info.rows && info.warehouse[col][row + 1] == EMPTY_CHAR){
+          dock.col = col;
+          dock.row = row+1;
+        }
+        info.dock_col[count] = dock.col;
+        info.dock_row[count] = dock.row;
         count++;
       }
     }
   }
+  std::cout << "Count " << count << std::endl;
   info.num_docks = count;
 }
 
@@ -209,15 +225,15 @@ int main() {
   RobotInfo runners;
   load_maze(maze, info);
   init_runners(info, runners);
-
+  find_coordinates(info);
   memory->minfo = info;
   memory->rinfo = runners;
   memory->quit = 0;
   memory->magic = MAGIC;
 
-  find_coordinates(info);
-  num_docks = memory->minfo.num_docks;
 
+  num_docks = memory->minfo.num_docks;
+  std::cout << "Number of docks " << num_docks << std::endl;
   cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME,num_docks);
 
   Inventory inv(info);

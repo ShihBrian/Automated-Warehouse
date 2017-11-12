@@ -129,7 +129,7 @@ class Robot : public cpen333::thread::thread_object {
     return id_;
   }
 
-  void parse_coordinate(std::vector<Coordinate>& orders){
+  void get_dock(std::vector<Coordinate>& orders){
     Coordinate dock;
     int curr_dock;
 
@@ -138,10 +138,12 @@ class Robot : public cpen333::thread::thread_object {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       curr_dock = memory_->minfo.curr_dock;
       if(curr_dock < memory_->minfo.num_docks) {
-        dock = memory_->minfo.docks[curr_dock];
+        dock.col = memory_->minfo.dock_col[curr_dock];
+        dock.row = memory_->minfo.dock_row[curr_dock];
         memory_->minfo.curr_dock++;
       }
     }
+
 
     for(auto& order : orders){
       if(order.col == -1 && order.row == -1){
@@ -160,8 +162,7 @@ class Robot : public cpen333::thread::thread_object {
   }
 
   //TODO: Get stock from truck or move stock to delivery truck depending on order
-  //TODO: Add loading dock and shipping dock
-  //TODO: pass list of docks to robot, find first available dock, insert b/w every element of vector
+  //TODO: free dock immediately after visiting
   int main() {
     bool quit = false;
     char cmd = 0;
@@ -176,7 +177,7 @@ class Robot : public cpen333::thread::thread_object {
     std::vector<Coordinate> orders;
     while (!quit) {
       orders = orders_.get();
-      this->parse_coordinate(orders);
+      this->get_dock(orders);
       for (auto &order:orders) {
         if (order.row == 999 && order.col == 999) {
           quit = true;

@@ -1,8 +1,6 @@
 #ifndef LAB4_MAZE_RUNNER_COMMON_H
 #define LAB4_MAZE_RUNNER_COMMON_H
 
-#include "OrderQueue.h"
-
 #define MAZE_MEMORY_NAME "lab4_maze_runner"
 #define MAZE_MUTEX_NAME "lab4_maze_runner_mutex"
 #define DOCKS_SEMAPHORE_NAME "docks_semaphore"
@@ -30,7 +28,8 @@ struct WarehouseInfo {
   int cols;           // columns in warehouse
   char warehouse[MAX_WAREHOUSE_SIZE][MAX_WAREHOUSE_SIZE];  // warehouse storage
   char visited[MAX_WAREHOUSE_SIZE][MAX_WAREHOUSE_SIZE];
-  Coordinate docks[MAX_WAREHOUSE_DOCKS];
+  unsigned dock_col[MAX_WAREHOUSE_DOCKS];
+  unsigned dock_row[MAX_WAREHOUSE_DOCKS];
   int curr_dock = 0;
   int num_docks;
 };
