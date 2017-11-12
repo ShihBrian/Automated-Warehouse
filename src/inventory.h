@@ -24,7 +24,6 @@ struct Shelf {
 
 //TODO: function to return shelves to visit to fulfill order, opposite of get available shelves
 class Inventory {
-  //TODO: Add thread safety
   std::vector <Shelf> shelves;
   WarehouseInfo minfo;
   Shelf shelf;
@@ -32,8 +31,9 @@ class Inventory {
   std::vector<std::string> default_products = {"Apple","Banana","Grape","Pear","Watermelon"};
   std::vector<int> default_weight = {2,3,1,2,10};
   std::vector<Order_item> available_products;
+  cpen333::process::mutex mutex_;
   public:
-    Inventory(WarehouseInfo &maze) : minfo(maze) {
+    Inventory(WarehouseInfo &maze) : minfo(maze), mutex_(MAZE_MUTEX_NAME) {
       for (int r = 0; r < minfo.rows; r++) {
         for (int c = 0; c < minfo.cols; c++) {
           if (minfo.warehouse[c][r] == SHELF_CHAR) {
@@ -68,27 +68,36 @@ class Inventory {
     }
 
     void update_inv(std::vector<Order_item> orders,bool add){
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
         for (auto &order:orders) {
           if(add) total_inv[order.product] += order.quantity;
           else total_inv[order.product] -= order.quantity;
         }
+      }
     }
 
     bool check_stock(std::vector<Order_item> orders){
-      for(auto& order:orders){
-        if(total_inv[order.product] < order.quantity){
-          return false;
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        for(auto& order:orders){
+          if(total_inv[order.product] < order.quantity){
+            return false;
+          }
         }
+        return true;
       }
-      return true;
     }
 
     void get_total_inv(std::vector<Order_item>& orders){
       Order_item order;
-      for(auto const& item : total_inv){
-        order.product = item.first;
-        order.quantity = item.second;
-        orders.push_back(order);
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        for(auto const& item : total_inv){
+          order.product = item.first;
+          order.quantity = item.second;
+          orders.push_back(order);
+        }
       }
     }
 
@@ -98,29 +107,32 @@ class Inventory {
       std::vector<Coordinate> coordinates;
       weight = get_weight(order.product);
       Coordinate temp = {-1,-1};
-      for(auto& shelf:shelves){
-        if (shelf.product == order.product || shelf.quantity == 0){
-          remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
-          if(remaining_weight > weight ) {
-            quantity = remaining_weight/weight;
-            if(quantity > order.quantity) {
-              quantity = order.quantity;
-              order.quantity = 0;
-            } else {
-              order.quantity -= quantity;
-            }
-            shelf.quantity += quantity;
-            shelf.product = order.product;
-            shelf.weight += quantity*weight;
-            coordinate.col = shelf.robot_col;
-            coordinate.row = shelf.robot_row;
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        for(auto& shelf:shelves){
+          if (shelf.product == order.product || shelf.quantity == 0){
+            remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
+            if(remaining_weight > weight ) {
+              quantity = remaining_weight/weight;
+              if(quantity > order.quantity) {
+                quantity = order.quantity;
+                order.quantity = 0;
+              } else {
+                order.quantity -= quantity;
+              }
+              shelf.quantity += quantity;
+              shelf.product = order.product;
+              shelf.weight += quantity*weight;
+              coordinate.col = shelf.robot_col;
+              coordinate.row = shelf.robot_row;
 
-            iterations = std::ceil((quantity*weight)/((double)ROBOT_MAX_WEIGHT));
-            for(int i=0;i<iterations;i++) {
-              coordinates.push_back(temp);
-              coordinates.push_back(coordinate);
+              iterations = std::ceil((quantity*weight)/((double)ROBOT_MAX_WEIGHT));
+              for(int i=0;i<iterations;i++) {
+                coordinates.push_back(temp);
+                coordinates.push_back(coordinate);
+              }
+              if(order.quantity == 0) break;
             }
-            if(order.quantity == 0) break;
           }
         }
       }
@@ -128,11 +140,14 @@ class Inventory {
     }
 
     void find_product(int& col, int& row, std::string product){
-      for(auto& shelf:shelves){
-        if (shelf.product == product){
-          col = shelf.robot_col;
-          row = shelf.robot_row;
-          break;
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        for(auto& shelf:shelves){
+          if (shelf.product == product){
+            col = shelf.robot_col;
+            row = shelf.robot_row;
+            break;
+          }
         }
       }
     }
@@ -172,20 +187,26 @@ class Inventory {
 
     void get_available_products(std::vector<Order_item>& products){
       Order_item item;
-      for(auto& product : available_products){
-        item.product = product.product;
-        products.push_back(item);
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        for(auto& product : available_products){
+          item.product = product.product;
+          products.push_back(item);
+        }
       }
     }
 
     Order_item get_shelf_info(int col, int row){
       Order_item item;
-      for(auto& shelf: shelves){
-        if(shelf.col == col && shelf.row == row){
-          item.quantity = shelf.quantity;
-          item.product = shelf.product;
-          item.weight = shelf.weight;
-          return item;
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        for(auto& shelf: shelves){
+          if(shelf.col == col && shelf.row == row){
+            item.quantity = shelf.quantity;
+            item.product = shelf.product;
+            item.weight = shelf.weight;
+            return item;
+          }
         }
       }
       item.product = "N/A";

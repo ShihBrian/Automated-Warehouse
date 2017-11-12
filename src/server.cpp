@@ -76,7 +76,6 @@ void kill_robots(){
   }
 }
 
-//TODO: add thread safety
 void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   int col, row;
   std::vector<Coordinate> coordinates;
@@ -94,13 +93,13 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
         outgoing_queue.add(coordinates);
         coordinates.clear();
       }
-      inv.update_inv(Orders, add);
     }
     else std::cout << "Not enough stock" << std::endl;
   } else { //restocking
     for (auto &order:Orders) {
       //list of coordinates the robot must visit in order to fulfil an order
       coordinates = inv.get_available_shelf(order);
+
       std::cout << "Shelf location for " << order.product << std::endl;
       for(auto& coordinate:coordinates){
         std::cout << coordinate.col << " " << coordinate.row << std::endl;
@@ -108,8 +107,8 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
       incoming_queue.add(coordinates);
       coordinates.clear();
     }
-    inv.update_inv(Orders, add);
   }
+    inv.update_inv(Orders, add);
 }
 
 //TODO: Make switch into FSM
