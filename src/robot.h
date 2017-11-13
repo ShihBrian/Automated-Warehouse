@@ -54,6 +54,7 @@ class Robot : public cpen333::thread::thread_object {
     memory_->rinfo.busy[idx_] = 0;
     memory_->rinfo.task[idx_] = 0;
     memory_->rinfo.quantity[idx_] = 0;
+    memory_->rinfo.home[idx_] = 1;
     for(int i=0;i<4;i++) {
       memory_->rinfo.product[idx_][i] = def_prod[i];
     }
@@ -149,6 +150,7 @@ class Robot : public cpen333::thread::thread_object {
         }
         memory_->rinfo.product[idx_][orders[0].product.length()+1] = '\0';
       }
+      memory_->rinfo.home[idx_] = 0;
     }
 
     for(auto& order : orders){
@@ -165,6 +167,7 @@ class Robot : public cpen333::thread::thread_object {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       memory_->minfo.curr_dock--;
       memory_->rinfo.busy[idx_] = 0;
+      memory_->rinfo.home[idx_] = 1;
     }
     docks_semaphore.notify();
   }
@@ -197,12 +200,14 @@ class Robot : public cpen333::thread::thread_object {
           memory_->rinfo.dest[idx_][COL_IDX] = x;
           memory_->rinfo.dest[idx_][ROW_IDX] = y;
           memory_->rinfo.quantity[idx_] = order.quantity;
-          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+          if(x == home.col && y == home.row)
+            this->order_finish();
+          std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         } else {
           safe_printf("Failed to find destination\n");
         }
       }
-      this->order_finish();
+
     }
     safe_printf("Robot %d done\n", id_);
 

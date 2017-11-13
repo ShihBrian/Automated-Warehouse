@@ -45,6 +45,7 @@ struct RobotInfo {
   char product[MAX_ROBOTS][MAX_WORD_LENGTH];
   int quantity[MAX_ROBOTS];
   int dest[MAX_ROBOTS][2];
+  int home[MAX_ROBOTS];
 };
 
 struct SharedData {
