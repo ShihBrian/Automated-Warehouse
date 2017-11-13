@@ -29,7 +29,7 @@ class Inventory {
   Shelf shelf;
   std::map<std::string,int> total_inv;
   std::vector<std::string> default_products = {"Apple","Banana","Grape","Pear","Watermelon"};
-  std::vector<int> default_weight = {2,3,1,2,10};
+  std::vector<int> default_weight = {2,3,1,2,11};
   std::vector<Order_item> available_products;
   cpen333::process::mutex mutex_;
   public:
@@ -102,7 +102,7 @@ class Inventory {
     }
 
     std::vector<Coordinate> get_available_shelf(Order_item order){
-      int row, col, weight, quantity, remaining_weight, iterations;
+      int row, col, weight, quantity, remaining_weight, iterations, robot_quantity;
       Coordinate coordinate;
       std::vector<Coordinate> coordinates;
       weight = get_weight(order.product);
@@ -125,12 +125,19 @@ class Inventory {
               shelf.weight += quantity*weight;
               coordinate.col = shelf.robot_col;
               coordinate.row = shelf.robot_row;
-
-              iterations = std::ceil((quantity*weight)/((double)ROBOT_MAX_WEIGHT));
+              coordinate.product = order.product;
+              robot_quantity = ROBOT_MAX_WEIGHT/weight;
+              iterations = quantity/robot_quantity;
               for(int i=0;i<iterations;i++) {
+                coordinate.quantity = robot_quantity;
                 coordinates.push_back(temp);
                 coordinates.push_back(coordinate);
               }
+              if(iterations == 0) coordinate.quantity = quantity;
+              else if(quantity % robot_quantity) coordinate.quantity = quantity % robot_quantity;
+
+              coordinates.push_back(temp);
+              coordinates.push_back(coordinate);
               if(order.quantity == 0) break;
             }
           }

@@ -98,9 +98,9 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
     for (auto &order:Orders) {
       //list of coordinates the robot must visit in order to fulfil an order
       coordinates = inv.get_available_shelf(order);
-      std::cout << "Shelf location for " << order.product << std::endl;
-      for(auto& coordinate:coordinates){
-        std::cout << coordinate.col << " " << coordinate.row << std::endl;
+      std::cout << "Order " << order.product << "Coordinates" << std::endl;
+      for(auto& c : coordinates){
+        std::cout << "Col " << c.col << "Row " << c.row << " Product " << c.product << " Quantity " << c.quantity << std::endl;
       }
       coordinates[0].product = order.product;
       coordinates[0].quantity = order.quantity;

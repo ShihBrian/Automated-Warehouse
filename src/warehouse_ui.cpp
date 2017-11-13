@@ -120,9 +120,9 @@ public:
     }
   }
 
-  void clear_log(){
-    char empty_line[] = "                                             ";
-    for(int i=0;i<15;i++){
+  void clear_log(int lines){
+    char empty_line[] = "                                                  ";
+    for(int i=0;i<lines;i++){
       display_.set_cursor_position(YOFF + i, XOFF + memory_->minfo.cols + 2);
       std::printf("%s", empty_line);
     }
@@ -158,9 +158,9 @@ public:
         dest[ROW_IDX] = rinfo.dest[i][ROW_IDX];
       }
 
-      if(line_count > 10) {
+      if(line_count > memory_->minfo.rows) {
         line_count = 0;
-        this->clear_log();
+        this->clear_log(memory_->minfo.rows);
       }
 
       if(busy) {
@@ -184,34 +184,24 @@ public:
             for(int i=0;i<num_docks;i++){
               if (dock[i][COL_IDX] == dest[COL_IDX] && dock[i][ROW_IDX] == dest[ROW_IDX]){
                 line_count++;
-                std::printf("Robot %c at dock %d",me,i);
+                if(task == 0) std::printf("Robot %c unloading product from truck at dock %d",me,i);
+                else std::printf("Robot %c loading product onto truck at dock %d",me,i);
                 isdock = true;
                 break;
               }
             }
             if(!isdock){
               line_count++;
-              std::printf("Robot %c at shelf with %d %s",me, quantity, product[i]);
+              if(task == 0) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);
+              else std::printf("Robot %c unloading %d %s from shelf",me, quantity, product[i]);
             }
           }
         }
-        /*
-      else {
-        for (int i = 0; i < num_docks; i++) {
-          if (newc == dock[i][COL_IDX] && newr == dock[i][ROW_IDX]) {
-            display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
-            line_count++;
-            std::printf("Robot %c at dock %d", me, i);
-          }
-        }
-      }
-         */
       }
 
       // print runner at new locationrinfo
       display_.set_cursor_position(YOFF + newr, XOFF + newc);
       std::printf("%c", me);
-
 
     }
   }

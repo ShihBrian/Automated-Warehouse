@@ -135,7 +135,6 @@ class Robot : public cpen333::thread::thread_object {
     int curr_dock;
     docks_semaphore.wait();
     quantity = orders[0].quantity;
-    std::cout << "Idx: " << idx_ << " Product: " << orders[0].product << std::endl;
     {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       curr_dock = memory_->minfo.curr_dock;
@@ -151,7 +150,7 @@ class Robot : public cpen333::thread::thread_object {
         memory_->rinfo.product[idx_][orders[0].product.length()+1] = '\0';
       }
     }
-    safe_printf("Product in Memory: %s",memory_->rinfo.product[idx_]);
+
     for(auto& order : orders){
       if(order.col == -1 && order.row == -1){
         order.col = dock.col;
@@ -197,6 +196,7 @@ class Robot : public cpen333::thread::thread_object {
           this->go();
           memory_->rinfo.dest[idx_][COL_IDX] = x;
           memory_->rinfo.dest[idx_][ROW_IDX] = y;
+          memory_->rinfo.quantity[idx_] = order.quantity;
           std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         } else {
           safe_printf("Failed to find destination\n");
