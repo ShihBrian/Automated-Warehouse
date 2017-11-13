@@ -62,6 +62,7 @@ int main(){
       case Popt::M_ADD_NEW_PROD:
         std::cout << "Enter product name" << std::endl;
         std::cin >> order.product;
+        std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Enter weight of item" << std::endl;
         std::cin >> order.quantity;
         Orders.clear();
