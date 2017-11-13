@@ -18,10 +18,10 @@ int main(){
   std::vector<Order_item> Orders;
   std::vector<std::string> products;
   Order_item order;
-  order.product = "Apples";
+  order.product = "Apple";
   order.quantity = 10;
   Orders.push_back(order);
-  order.product = "Bananas";
+  order.product = "Banana";
   order.quantity = 20;
   Orders.push_back(order);
 
@@ -31,6 +31,8 @@ int main(){
     std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
     switch(cmd){
       case Copt::C_CREATE:
+        products.clear();
+        product_list.clear();
         query_products(product_list,socket,products);
         create_order(Orders,products);
         break;
@@ -43,6 +45,16 @@ int main(){
       case Copt::C_SEND:
         send_type(socket,MSG_CUSTOMER);
         send_order(Orders,socket);
+        break;
+      case Copt::C_VIEW_INV:
+        Orders.clear();
+        send_type(socket,MSG_INVENTORY);
+        std::cout << "Current Inventory" << std::endl;
+        receive_inv(socket,Orders);
+        for(auto& order:Orders){
+          std::cout << order.product << " " << order.quantity << std::endl;
+        }
+        Orders.clear();
         break;
       case Copt::C_QUIT:
         quit = true;

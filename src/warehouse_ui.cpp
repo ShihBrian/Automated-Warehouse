@@ -122,14 +122,13 @@ public:
 
   void clear_log(int lines){
     char empty_line[] = "                                                  ";
-    for(int i=0;i<lines;i++){
+    for(int i=0;i<=lines;i++){
       display_.set_cursor_position(YOFF + i, XOFF + memory_->minfo.cols + 2);
       std::printf("%s", empty_line);
     }
   }
-  /**
-  * Draws all runners in the maze
-  */
+  //TODO: fix log clear
+  //TODO: fix home display only once when stopped
   void draw_runners() {
     RobotInfo& rinfo = memory_->rinfo;
     int newc, newr, busy, task, quantity;
@@ -172,7 +171,6 @@ public:
           std::printf("%c", EMPTY_CHAR);
           lastpos_[i][COL_IDX] = newc;
           lastpos_[i][ROW_IDX] = newr;
-
           display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
           if ((newc == home_[COL_IDX] && newr == home_[ROW_IDX])) {
             // display a completion message
@@ -184,7 +182,7 @@ public:
             for(int i=0;i<num_docks;i++){
               if (dock[i][COL_IDX] == dest[COL_IDX] && dock[i][ROW_IDX] == dest[ROW_IDX]){
                 line_count++;
-                if(task == 0) std::printf("Robot %c unloading product from truck at dock %d",me,i);
+                if(task == 1) std::printf("Robot %c unloading product from truck at dock %d",me,i);
                 else std::printf("Robot %c loading product onto truck at dock %d",me,i);
                 isdock = true;
                 break;
@@ -192,7 +190,7 @@ public:
             }
             if(!isdock){
               line_count++;
-              if(task == 0) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);
+              if(task == 1) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);
               else std::printf("Robot %c unloading %d %s from shelf",me, quantity, product[i]);
             }
           }
@@ -237,7 +235,7 @@ int main() {
   while (!ui.quit()) {
     ui.draw_runners();
     ui.draw_objects();
-    std::this_thread::sleep_for(std::chrono::milliseconds(60));
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
   }
 
   return 0;

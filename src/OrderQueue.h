@@ -6,6 +6,7 @@ struct Coordinate {
   int col;
   std::string product;
   int quantity;
+  int add;
 };
 /**
  * Thread-safe queue of items

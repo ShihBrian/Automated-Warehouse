@@ -63,8 +63,7 @@ int main(){
         std::cout << "Enter product name" << std::endl;
         std::cin >> order.product;
         std::cout << "Enter weight of item" << std::endl;
-        std::cin >> order.weight;
-        order.quantity = 0;
+        std::cin >> order.quantity;
         Orders.clear();
         Orders.push_back(order);
         send_type(socket,MSG_ADD);

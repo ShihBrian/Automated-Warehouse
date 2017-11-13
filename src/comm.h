@@ -139,7 +139,6 @@ void receive_inv(cpen333::process::socket& socket,  std::vector<Order_item>& Ord
           product = buff;
           order.product = product;
           temp_Orders.push_back(order);
-        std::cout << order.product << " " << order.quantity << std::endl;
           break;
         case MSG_END:
           if(order_size == 0){

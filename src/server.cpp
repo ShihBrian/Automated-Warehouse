@@ -5,7 +5,6 @@
 
 std::vector<Robot*> robots;
 CircularOrderQueue incoming_queue;
-CircularOrderQueue outgoing_queue;
 int nrobots = 4;
 int num_docks;
 
@@ -46,7 +45,7 @@ void modify_robots(bool add,cpen333::process::socket& client){
   if(add){
     if(nrobots < MAX_ROBOTS) {
       nrobots++;
-      robots.push_back(new Robot(nrobots, incoming_queue, outgoing_queue));
+      robots.push_back(new Robot(nrobots, incoming_queue));
       robots[robots.size()-1]->start();
       send_response(client,1,"Successfully added robot");
     }
@@ -76,7 +75,6 @@ void kill_robots(){
 }
 
 void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
-  int col, row;
   std::vector<Coordinate> coordinates;
 
   std::cout << "Incoming orders" << std::endl;
@@ -87,28 +85,27 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   if (!add) {
     if (inv.check_stock(Orders)) {
       for (auto &order:Orders) {
-        inv.find_product(col, row, order.product);
-        coordinates.push_back({row,col});
-        outgoing_queue.add(coordinates);
+        coordinates = inv.get_coordinates(order);
+        coordinates[0].product = order.product;
+        coordinates[0].add = 0;
+        incoming_queue.add(coordinates);
         coordinates.clear();
       }
+      inv.update_inv(Orders, add);
     }
     else std::cout << "Not enough stock" << std::endl;
   } else { //restocking
     for (auto &order:Orders) {
       //list of coordinates the robot must visit in order to fulfil an order
       coordinates = inv.get_available_shelf(order);
-      std::cout << "Order " << order.product << "Coordinates" << std::endl;
-      for(auto& c : coordinates){
-        std::cout << "Col " << c.col << "Row " << c.row << " Product " << c.product << " Quantity " << c.quantity << std::endl;
-      }
       coordinates[0].product = order.product;
       coordinates[0].quantity = order.quantity;
+      coordinates[0].add = 1;
       incoming_queue.add(coordinates);
       coordinates.clear();
     }
-  }
     inv.update_inv(Orders, add);
+  }
 }
 
 //TODO: Make switch into FSM
@@ -165,7 +162,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
             temp_Orders.clear();
             if(add_product) {
               add_product = false;
-              inv.add_new_item(Orders[0].product,Orders[0].weight);
+              inv.add_new_item(Orders[0].product,Orders[0].quantity);
               send_response(client,1,"Adding new product to inventory");
             }
             else if(remove_product){
@@ -175,7 +172,12 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
             }
             else{
               if(add) send_response(client,1,"Restocking truck arrived, unloading...");
-              else send_response(client,1,"Delivery truck arrived, waiting to be loaded...");
+              else {
+                if(inv.check_stock(Orders))
+                  send_response(client,1,"Delivery truck arrived, waiting to be loaded...");
+                else
+                  send_response(client,0,"Not enough inventory to fulfill order");
+              }
               handle_orders(Orders,inv,add);
               Orders.clear();
             }
@@ -188,6 +190,10 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           break;
         case MSG_INVENTORY:
           inv.get_total_inv(temp_Orders);
+          std::cout << "Current Inventory" << std::endl;
+          for(auto& order :temp_Orders){
+            std::cout << order.product << " " << order.quantity << std::endl;
+          }
           send_type(client,MSG_SERVER);
           send_order(temp_Orders,client);
           temp_Orders.clear();
@@ -259,7 +265,7 @@ int main() {
   inv.init_inv();
 
   for (int i=0; i<nrobots; ++i) {
-    robots.push_back(new Robot(i, incoming_queue, outgoing_queue));
+    robots.push_back(new Robot(i, incoming_queue));
   }
 
   // start everyone

@@ -8,7 +8,7 @@
  * Basic order information containing a customer id and item id
  */
 
-std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order"};
+std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order","View Inventory"};
 std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Restocking Truck","View Order Status",
                                          "View Inventory","Add New Product","Remove Product","Add/Remove Robots",
                                          "Show Shelf Info"};
@@ -19,6 +19,7 @@ enum Copt {
   C_EDIT,
   C_PRINT,
   C_SEND,
+  C_VIEW_INV,
   C_QUIT
 };
 

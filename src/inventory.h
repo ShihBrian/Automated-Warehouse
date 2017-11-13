@@ -3,7 +3,7 @@
 
 #include <cpen333/process/mutex.h>
 
-#define SHELF_MAX_WEIGHT 200
+#define SHELF_MAX_WEIGHT 100
 #define ROBOT_MAX_WEIGHT 50
 
 struct Order_item{
@@ -28,7 +28,7 @@ class Inventory {
   WarehouseInfo minfo;
   Shelf shelf;
   std::map<std::string,int> total_inv;
-  std::vector<std::string> default_products = {"Apple","Banana","Grape","Pear","Watermelon"};
+  std::vector<std::string> default_products = {"Apple","Banana","Grape","Peach","Watermelon"};
   std::vector<int> default_weight = {2,3,1,2,11};
   std::vector<Order_item> available_products;
   cpen333::process::mutex mutex_;
@@ -105,11 +105,12 @@ class Inventory {
       int row, col, weight, quantity, remaining_weight, iterations, robot_quantity;
       Coordinate coordinate;
       std::vector<Coordinate> coordinates;
-      weight = get_weight(order.product);
+      weight = this->get_weight(order.product);
       Coordinate temp = {-1,-1};
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         for(auto& shelf:shelves){
+          //TODO: search product first then by empty
           if (shelf.product == order.product || shelf.quantity == 0){
             remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
             if(remaining_weight > weight ) {
@@ -135,7 +136,6 @@ class Inventory {
               }
               if(iterations == 0) coordinate.quantity = quantity;
               else if(quantity % robot_quantity) coordinate.quantity = quantity % robot_quantity;
-
               coordinates.push_back(temp);
               coordinates.push_back(coordinate);
               if(order.quantity == 0) break;
@@ -146,14 +146,55 @@ class Inventory {
       return coordinates;
     }
 
-    void find_product(int& col, int& row, std::string product){
+    std::vector<Coordinate> get_coordinates(Order_item order){
+
+      int weight = this->get_weight(order.product);
+      int robot_quantity = ROBOT_MAX_WEIGHT/weight;
+      int quantity;
+      Coordinate coordinate;
+      std::vector<Coordinate> coordinates;
+      Coordinate temp = {-1,-1};
+
+      while(order.quantity > 0) {
+        Shelf& s = find_product(order.product);
+        if(s.quantity > order.quantity){
+          s.quantity -= order.quantity;
+          s.weight -= order.quantity*weight;
+          quantity = order.quantity;
+          order.quantity = 0;
+        }
+        else{
+          order.quantity -= s.quantity;
+          quantity = s.quantity;
+          s.quantity = 0;
+          s.weight = 0;
+        }
+        int iterations = quantity/robot_quantity;
+        coordinate.col = s.robot_col;
+        coordinate.row = s.robot_row;
+        coordinate.product = s.product;
+        for(int i=0;i<iterations;i++){
+          quantity -= robot_quantity;
+          coordinate.quantity = robot_quantity;
+          coordinates.push_back(coordinate);
+          coordinates.push_back(temp);
+        }
+
+        if(quantity>0){
+          coordinate.quantity = quantity;
+          coordinates.push_back(coordinate);
+          coordinates.push_back(temp);
+        }
+      }
+      return coordinates;
+    }
+
+    Shelf& find_product(std::string product){
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         for(auto& shelf:shelves){
-          if (shelf.product == product){
-            col = shelf.robot_col;
-            row = shelf.robot_row;
-            break;
+          if (shelf.product == product && shelf.quantity != 0){
+            return shelf;
           }
         }
       }
@@ -178,6 +219,7 @@ class Inventory {
     void add_new_item(std::string product, int weight){
       Order_item item;
       item.product = product;
+      std::cout << "Adding weight " << weight << std::endl;
       item.weight = weight;
       available_products.push_back(item);
     }

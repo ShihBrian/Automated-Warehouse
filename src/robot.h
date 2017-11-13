@@ -14,7 +14,6 @@
 
 class Robot : public cpen333::thread::thread_object {
   OrderQueue& orders_;
-  OrderQueue& serve_;
   int id_;
   cpen333::process::shared_object<SharedData> memory_;
   cpen333::process::mutex mutex_;
@@ -32,8 +31,8 @@ class Robot : public cpen333::thread::thread_object {
   size_t idx_;   // runner index
   int loc_[2];   // current location
  public:
-  Robot(int id, OrderQueue& orders, OrderQueue& serve) :
-      id_(id), orders_(orders), serve_(serve),memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME),
+  Robot(int id, OrderQueue& orders) :
+      id_(id), orders_(orders), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME),
       minfo_(), idx_(0), loc_(), docks_semaphore(DOCKS_SEMAPHORE_NAME)
   {
     char def_prod[] = "N/A";
@@ -116,7 +115,7 @@ class Robot : public cpen333::thread::thread_object {
 
   void go(){
     for(auto& coordinate : path) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(80));
+      std::this_thread::sleep_for(std::chrono::milliseconds(60));
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         memory_->rinfo.rloc[idx_][COL_IDX] = coordinate.first;
@@ -144,6 +143,7 @@ class Robot : public cpen333::thread::thread_object {
         memory_->minfo.curr_dock++;
         memory_->rinfo.busy[idx_] = 1;
         memory_->rinfo.quantity[idx_] = quantity;
+        memory_->rinfo.task[idx_] = orders[0].add;
         for(int i=0;i<orders[0].product.length();i++){
           memory_->rinfo.product[idx_][i] = orders[0].product[i];
         }
@@ -197,7 +197,7 @@ class Robot : public cpen333::thread::thread_object {
           memory_->rinfo.dest[idx_][COL_IDX] = x;
           memory_->rinfo.dest[idx_][ROW_IDX] = y;
           memory_->rinfo.quantity[idx_] = order.quantity;
-          std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         } else {
           safe_printf("Failed to find destination\n");
         }
