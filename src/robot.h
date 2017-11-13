@@ -23,8 +23,9 @@ class Robot : public cpen333::thread::thread_object {
   WarehouseInfo minfo_;
   int end_col = 0;
   int end_row = 0;
-  std::string product;
+  int order_id;
   int quantity;
+  int add;
   Coordinate home;
   std::tuple<int,int> coordinates;
   // runner info
@@ -135,6 +136,7 @@ class Robot : public cpen333::thread::thread_object {
     int curr_dock;
     docks_semaphore.wait();
     quantity = orders[0].quantity;
+    order_id = orders[0].order_id;
     {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       curr_dock = memory_->minfo.curr_dock;
@@ -144,7 +146,8 @@ class Robot : public cpen333::thread::thread_object {
         memory_->minfo.curr_dock++;
         memory_->rinfo.busy[idx_] = 1;
         memory_->rinfo.quantity[idx_] = quantity;
-        memory_->rinfo.task[idx_] = orders[0].add;
+        add = orders[0].add;
+        memory_->rinfo.task[idx_] = add;
         for(int i=0;i<orders[0].product.length();i++){
           memory_->rinfo.product[idx_][i] = orders[0].product[i];
         }
@@ -168,6 +171,7 @@ class Robot : public cpen333::thread::thread_object {
       memory_->minfo.curr_dock--;
       memory_->rinfo.busy[idx_] = 0;
       memory_->rinfo.home[idx_] = 1;
+      memory_->minfo.order_status[add][order_id]--;
     }
     docks_semaphore.notify();
   }

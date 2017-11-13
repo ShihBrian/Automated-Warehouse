@@ -138,7 +138,7 @@ public:
 
   void draw_runners() {
     RobotInfo& rinfo = memory_->rinfo;
-    int newc, newr, busy, task, quantity, home;
+    int newc, newr, busy, task, quantity, restock, deliver;
     int dest[2];
     char product[MAX_ROBOTS][MAX_WORD_LENGTH];
     int count = 0;
@@ -153,13 +153,26 @@ public:
         newc = rinfo.rloc[i][COL_IDX];
         busy = rinfo.busy[i];
         task = rinfo.task[i];
-        home = rinfo.home[i];
-        if(home) {
+        if(rinfo.home[i]) {
           display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
           line_count++;
           check_log(line_count);
           std::printf("Robot %c home", me);
           rinfo.home[i] = 0;
+        }
+        if(memory_->minfo.restock){
+          display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
+          line_count++;
+          check_log(line_count);
+          std::printf("Restocking truck arrived at dock");
+          memory_->minfo.restock = 0;
+        }
+        if(memory_->minfo.deliver){
+          display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
+          line_count++;
+          check_log(line_count);
+          std::printf("Delivery truck arrived at dock");
+          memory_->minfo.deliver = 0;
         }
         while(rinfo.product[i][count] != '\0'){
           product[i][count] = rinfo.product[i][count];
@@ -170,6 +183,19 @@ public:
         quantity = rinfo.quantity[i];
         dest[COL_IDX] = rinfo.dest[i][COL_IDX];
         dest[ROW_IDX] = rinfo.dest[i][ROW_IDX];
+
+        for(int j=0;j<MAX_WAREHOUSE_DOCKS;j++){
+          for(int add=0;add<2;add++){
+            if(memory_->minfo.order_status[add][j] == 0){
+              memory_->minfo.order_status[add][j] = -1;
+              display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
+              line_count++;
+              check_log(line_count);
+              if(add) std::printf("Restocking truck empty, leaving now");
+              else std::printf("Order fulfilled, delivery truck leaving");
+            }
+          }
+        }
       }
       display_.set_cursor_position(YOFF + lastpos_[i][ROW_IDX], XOFF + lastpos_[i][COL_IDX]);
       std::printf("%c", EMPTY_CHAR);

@@ -26,6 +26,7 @@ struct Shelf {
 class Inventory {
   std::vector <Shelf> shelves;
   WarehouseInfo minfo;
+  cpen333::process::shared_object<SharedData> memory_;
   Shelf shelf;
   std::map<std::string,int> total_inv;
   std::vector<std::string> default_products = {"Apple","Banana","Grape","Peach","Watermelon"};
@@ -33,7 +34,7 @@ class Inventory {
   std::vector<Order_item> available_products;
   cpen333::process::mutex mutex_;
   public:
-    Inventory(WarehouseInfo &maze) : minfo(maze), mutex_(MAZE_MUTEX_NAME) {
+    Inventory(WarehouseInfo &maze) : minfo(maze),memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
       for (int r = 0; r < minfo.rows; r++) {
         for (int c = 0; c < minfo.cols; c++) {
           if (minfo.warehouse[c][r] == SHELF_CHAR) {
@@ -101,7 +102,7 @@ class Inventory {
       }
     }
 
-    std::vector<Coordinate> get_available_shelf(Order_item order){
+    std::vector<Coordinate> get_available_shelf(Order_item order, int size, int id){
       int row, col, weight, quantity, remaining_weight, iterations, robot_quantity;
       Coordinate coordinate;
       std::vector<Coordinate> coordinates;
@@ -109,6 +110,8 @@ class Inventory {
       Coordinate temp = {-1,-1};
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
+        memory_->minfo.restock = 1;
+        memory_->minfo.order_status[1][id] = size;
         for(auto& shelf:shelves){
           //TODO: search product first then by empty
           if (shelf.product == order.product || shelf.quantity == 0){
@@ -146,7 +149,7 @@ class Inventory {
       return coordinates;
     }
 
-    std::vector<Coordinate> get_coordinates(Order_item order){
+    std::vector<Coordinate> get_coordinates(Order_item order, int size, int id){
 
       int weight = this->get_weight(order.product);
       int robot_quantity = ROBOT_MAX_WEIGHT/weight;
@@ -156,18 +159,22 @@ class Inventory {
       Coordinate temp = {-1,-1};
 
       while(order.quantity > 0) {
-        Shelf& s = find_product(order.product);
-        if(s.quantity > order.quantity){
-          s.quantity -= order.quantity;
-          s.weight -= order.quantity*weight;
-          quantity = order.quantity;
-          order.quantity = 0;
-        }
-        else{
-          order.quantity -= s.quantity;
-          quantity = s.quantity;
-          s.quantity = 0;
-          s.weight = 0;
+        Shelf &s = find_product(order.product);
+        {
+          std::lock_guard<decltype(mutex_)> lock(mutex_);
+          memory_->minfo.deliver = 1;
+          memory_->minfo.order_status[0][id] = size;
+          if (s.quantity > order.quantity) {
+            s.quantity -= order.quantity;
+            s.weight -= order.quantity * weight;
+            quantity = order.quantity;
+            order.quantity = 0;
+          } else {
+            order.quantity -= s.quantity;
+            quantity = s.quantity;
+            s.quantity = 0;
+            s.weight = 0;
+          }
         }
         int iterations = quantity/robot_quantity;
         coordinate.col = s.robot_col;
@@ -264,6 +271,15 @@ class Inventory {
       return item;
     }
 
+    int get_order_id(){
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        for(int i = 0;i<MAX_WAREHOUSE_DOCKS;i++){
+          if (memory_->minfo.order_status[0][i] == -1 && memory_->minfo.order_status[1][i] == -1) return i;
+        }
+      }
+      return -1;
+    }
 };
 
 

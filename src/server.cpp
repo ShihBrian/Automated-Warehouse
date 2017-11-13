@@ -76,18 +76,24 @@ void kill_robots(){
 
 void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   std::vector<Coordinate> coordinates;
-
+  int order_id;
   std::cout << "Incoming orders" << std::endl;
   for(auto& order:Orders){
     std::cout << order.product << " : " << order.quantity << std::endl;
+  }
+  order_id = inv.get_order_id();
+  if(order_id == -1){
+    std::cout << "No order_id available" << std::endl;
+    return;
   }
   //if removing stock and there is enough
   if (!add) {
     if (inv.check_stock(Orders)) {
       for (auto &order:Orders) {
-        coordinates = inv.get_coordinates(order);
+        coordinates = inv.get_coordinates(order,Orders.size(), order_id);
         coordinates[0].product = order.product;
         coordinates[0].add = 0;
+        coordinates[0].order_id = order_id;
         incoming_queue.add(coordinates);
         coordinates.clear();
       }
@@ -97,10 +103,11 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   } else { //restocking
     for (auto &order:Orders) {
       //list of coordinates the robot must visit in order to fulfil an order
-      coordinates = inv.get_available_shelf(order);
+      coordinates = inv.get_available_shelf(order,Orders.size(),order_id);
       coordinates[0].product = order.product;
       coordinates[0].quantity = order.quantity;
       coordinates[0].add = 1;
+      coordinates[0].order_id = order_id;
       incoming_queue.add(coordinates);
       coordinates.clear();
     }
@@ -253,11 +260,15 @@ int main() {
   find_coordinates(info);
   info.home_col = home.col;
   info.home_row = home.row;
+
   memory->minfo = info;
   memory->rinfo = runners;
   memory->quit = 0;
   memory->magic = MAGIC;
-
+  for(int i=0;i<MAX_WAREHOUSE_DOCKS;i++){
+    memory->minfo.order_status[0][i] = -1;
+    memory->minfo.order_status[1][i] = -1;
+  }
   num_docks = memory->minfo.num_docks;
   cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME,num_docks);
 
