@@ -201,10 +201,7 @@ public:
           // zero out last spot and update known location
           lastpos_[i][COL_IDX] = newc;
           lastpos_[i][ROW_IDX] = newr;
-          if((newc == dest[COL_IDX] && newr == dest[ROW_IDX]) &&
-              (dest[COL_IDX] != home_coord[COL_IDX] && dest[ROW_IDX] != home_coord[ROW_IDX])){
-              set_and_check_log(line_count);
-              std::printf("Robot %d reached destination",me);
+          if((newc == dest[COL_IDX] && newr == dest[ROW_IDX])){
               if(!dock_num) {
                 set_and_check_log(line_count);
                 if(task == 1) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);
