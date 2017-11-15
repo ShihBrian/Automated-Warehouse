@@ -49,6 +49,7 @@ struct RobotInfo {
   int quantity[MAX_ROBOTS];
   int dest[MAX_ROBOTS][2];
   int home[MAX_ROBOTS];
+  int dock[MAX_ROBOTS];
 };
 
 struct SharedData {

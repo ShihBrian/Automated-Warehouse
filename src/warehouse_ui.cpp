@@ -23,8 +23,6 @@ class WarehouseUI {
   // previous positions of runners
   int lastpos_[MAX_ROBOTS][2];
   int home_[2];   // exit location
-  int dock[MAX_WAREHOUSE_DOCKS][2];
-  int num_docks;
 public:
 
   WarehouseUI() : display_(), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
@@ -41,12 +39,6 @@ public:
 
     home_[COL_IDX] = memory_->minfo.home_col;
     home_[ROW_IDX] = memory_->minfo.home_row;
-    num_docks = memory_->minfo.num_docks;
-
-    for(int i=0;i<num_docks;i++){
-      dock[i][COL_IDX] = memory_->minfo.dock_col[i];
-      dock[i][ROW_IDX] = memory_->minfo.dock_row[i];
-    }
 
   }
   /**
@@ -129,7 +121,9 @@ public:
     display_.set_cursor_position(YOFF, XOFF + memory_->minfo.cols + 2);
   }
 
-  void check_log(unsigned& line_count){
+  void set_and_check_log(unsigned &line_count){
+    display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
+    line_count++;
     if(line_count > memory_->minfo.rows) {
       line_count = 1;
       this->clear_log(memory_->minfo.rows);
@@ -143,7 +137,7 @@ public:
     int home_coord[2];
     char product[MAX_ROBOTS][MAX_WORD_LENGTH];
     int count = 0;
-    bool isdock = false;
+    int dock_num;
     // draw all runner locations
     for (size_t i = 0; i<rinfo.nrobot; ++i) {
       char me = 'A'+i;
@@ -155,28 +149,29 @@ public:
         busy = rinfo.busy[i];
         task = rinfo.task[i];
         home = rinfo.home[i];
+        dock_num = rinfo.dock[i];
         home_coord[COL_IDX] = memory_->minfo.home_col;
         home_coord[ROW_IDX] = memory_->minfo.home_row;
         if(home) {
-          display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
-          line_count++;
-          check_log(line_count);
+          set_and_check_log(line_count);
           std::printf("Robot %c home", me);
           rinfo.home[i] = 0;
         }
         if(memory_->minfo.restock){
-          display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
-          line_count++;
-          check_log(line_count);
+          set_and_check_log(line_count);
           std::printf("Restocking truck arrived at dock");
           memory_->minfo.restock = 0;
         }
         if(memory_->minfo.deliver){
-          display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
-          line_count++;
-          check_log(line_count);
+          set_and_check_log(line_count);
           std::printf("Delivery truck arrived at dock");
           memory_->minfo.deliver = 0;
+        }
+        if(dock_num){
+          set_and_check_log(line_count);
+          if(task == 1) std::printf("Robot %c unloading product from truck at dock %d",me, dock_num);
+          else std::printf("Robot %c loading product onto truck at dock %d",me, dock_num);
+          memory_->rinfo.dock[i] = 0;
         }
         while(rinfo.product[i][count] != '\0'){
           product[i][count] = rinfo.product[i][count];
@@ -192,9 +187,7 @@ public:
           for(int add=0;add<2;add++){
             if(memory_->minfo.order_status[add][j] == 0){
               memory_->minfo.order_status[add][j] = -1;
-              display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
-              line_count++;
-              check_log(line_count);
+              set_and_check_log(line_count);
               if(add) std::printf("Restocking truck empty, leaving now");
               else std::printf("Order fulfilled, delivery truck leaving");
             }
@@ -207,29 +200,15 @@ public:
         if (newc != lastpos_[i][COL_IDX]
             || newr != lastpos_[i][ROW_IDX]) {
           // zero out last spot and update known location
-
           lastpos_[i][COL_IDX] = newc;
           lastpos_[i][ROW_IDX] = newr;
-          display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
           if((newc == dest[COL_IDX] && newr == dest[ROW_IDX]) &&
               (dest[COL_IDX] != home_coord[COL_IDX] && dest[ROW_IDX] != home_coord[ROW_IDX])){
-            isdock = false;
-            for(int i=0;i<num_docks;i++){
-              if (dock[i][COL_IDX] == dest[COL_IDX] && dock[i][ROW_IDX] == dest[ROW_IDX]){
-                line_count++;
-                check_log(line_count);
-                if(task == 1) std::printf("Robot %c unloading product from truck at dock %d",me,i);
-                else std::printf("Robot %c loading product onto truck at dock %d",me,i);
-                isdock = true;
-                break;
+              if(!dock_num) {
+                set_and_check_log(line_count);
+                if(task == 1) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);
+                else std::printf("Robot %c unloading %d %s from shelf",me, quantity, product[i]);
               }
-            }
-            if(!isdock){
-              line_count++;
-              check_log(line_count);
-              if(task == 1) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);
-              else std::printf("Robot %c unloading %d %s from shelf",me, quantity, product[i]);
-            }
           }
         }
       }

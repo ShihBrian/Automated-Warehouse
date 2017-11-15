@@ -26,6 +26,8 @@ class Robot : public cpen333::thread::thread_object {
   int order_id;
   int quantity;
   int add;
+  int dock[MAX_WAREHOUSE_DOCKS][2];
+  int num_docks;
   Coordinate home;
   std::tuple<int,int> coordinates;
   // runner info
@@ -56,8 +58,14 @@ class Robot : public cpen333::thread::thread_object {
     memory_->rinfo.task[idx_] = 0;
     memory_->rinfo.quantity[idx_] = 0;
     memory_->rinfo.home[idx_] = 1;
+    memory_->rinfo.dock[idx_] = 0;
     for(int i=0;i<4;i++) {
       memory_->rinfo.product[idx_][i] = def_prod[i];
+    }
+    num_docks = memory_->minfo.num_docks;
+    for(int i=0;i<num_docks;i++){
+      dock[i][COL_IDX] = memory_->minfo.dock_col[i];
+      dock[i][ROW_IDX] = memory_->minfo.dock_row[i];
     }
   }
 
@@ -154,6 +162,7 @@ class Robot : public cpen333::thread::thread_object {
         memory_->rinfo.product[idx_][orders[0].product.length()] = '\0';
       }
       memory_->rinfo.home[idx_] = 0;
+      memory_->rinfo.dock[idx_] = 0;
     }
 
     for(auto& order : orders){
@@ -199,11 +208,17 @@ class Robot : public cpen333::thread::thread_object {
         if (this->find_path(x, y)) {
           std::tie(y, x) = coordinates;
           this->go();
-          memory_->rinfo.dest[idx_][COL_IDX] = x;
-          memory_->rinfo.dest[idx_][ROW_IDX] = y;
-          memory_->rinfo.quantity[idx_] = order.quantity;
-          if(x == home.col && y == home.row)
-            this->order_finish();
+          {
+            std::lock_guard<decltype(mutex_)> lock(mutex_);
+            memory_->rinfo.dest[idx_][COL_IDX] = x;
+            memory_->rinfo.dest[idx_][ROW_IDX] = y;
+            memory_->rinfo.quantity[idx_] = order.quantity;
+            if(x == home.col && y == home.row)
+              this->order_finish();
+            for(int i=0;i<num_docks;i++){
+              if(x == dock[i][COL_IDX] && y == dock[i][ROW_IDX]) memory_->rinfo.dock[idx_] = i+1;
+            }
+          }
           std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         } else {
           safe_printf("Failed to find destination\n");
