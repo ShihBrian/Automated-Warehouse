@@ -22,7 +22,6 @@ struct Shelf {
   int weight = 0;
 };
 
-//TODO: function to return shelves to visit to fulfill order, opposite of get available shelves
 class Inventory {
   std::vector <Shelf> shelves;
   WarehouseInfo minfo;
@@ -113,7 +112,6 @@ class Inventory {
         memory_->minfo.restock = 1;
         memory_->minfo.order_status[1][id] = size;
         for(auto& shelf:shelves){
-          //TODO: search product first then by empty
           if (shelf.product == order.product || shelf.quantity == 0){
             remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
             if(remaining_weight > weight ) {

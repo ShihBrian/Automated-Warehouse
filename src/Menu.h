@@ -4,15 +4,11 @@
 #include "server.h"
 #include "inventory.h"
 
-/**
- * Basic order information containing a customer id and item id
- */
-
 std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order","View Inventory"};
 std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Restocking Truck","View Order Status",
                                          "View Inventory","Add New Product","Remove Product","Add/Remove Robots",
                                          "Show Shelf Info"};
-std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot", "Modify Max Weight"};
+std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot"};
 
 enum Copt {
   C_CREATE = 1,
@@ -105,7 +101,5 @@ void edit_order(std::vector<Order_item>& Orders){
     else std::cout << "Invalid choice, try again" << std::endl;
   }
 }
-
-//TODO: change max weight of robots
 
 #endif //LAB6_ORDER_H

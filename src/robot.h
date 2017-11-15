@@ -151,7 +151,7 @@ class Robot : public cpen333::thread::thread_object {
         for(int i=0;i<orders[0].product.length();i++){
           memory_->rinfo.product[idx_][i] = orders[0].product[i];
         }
-        memory_->rinfo.product[idx_][orders[0].product.length()+1] = '\0';
+        memory_->rinfo.product[idx_][orders[0].product.length()] = '\0';
       }
       memory_->rinfo.home[idx_] = 0;
     }
@@ -176,8 +176,6 @@ class Robot : public cpen333::thread::thread_object {
     docks_semaphore.notify();
   }
 
-  //TODO: Get stock from truck or move stock to delivery truck depending on order
-  //TODO: free dock immediately after visiting
   int main() {
     bool quit = false;
     char cmd = 0;

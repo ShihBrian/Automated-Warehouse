@@ -1,5 +1,5 @@
 #include "server.h"
-#include "Order.h"
+#include "Menu.h"
 #include "comm.h"
 
 
@@ -105,7 +105,6 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
       //list of coordinates the robot must visit in order to fulfil an order
       coordinates = inv.get_available_shelf(order,Orders.size(),order_id);
       coordinates[0].product = order.product;
-      coordinates[0].quantity = order.quantity;
       coordinates[0].add = 1;
       coordinates[0].order_id = order_id;
       incoming_queue.add(coordinates);
@@ -115,7 +114,6 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
   }
 }
 
-//TODO: Make switch into FSM
 void service(cpen333::process::socket client, int id, Inventory& inv){
   std::vector<Order_item> temp_Orders;
   std::vector<Order_item> Orders;
@@ -202,13 +200,13 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
             std::cout << order.product << " " << order.quantity << std::endl;
           }
           send_type(client,MSG_SERVER);
-          send_order(temp_Orders,client);
+          send_orders(temp_Orders, client);
           temp_Orders.clear();
           break;
         case MSG_PRODUCTS:
           inv.get_available_products(temp_Orders);
           send_type(client,MSG_SERVER);
-          send_order(temp_Orders,client);
+          send_orders(temp_Orders, client);
           temp_Orders.clear();
           break;
         case MSG_MOD_ROBOT:
@@ -235,7 +233,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           temp_Orders.clear();
           temp_Orders.push_back(order);
           send_type(client,MSG_SERVER);
-          send_order(temp_Orders,client);
+          send_orders(temp_Orders, client);
           temp_Orders.clear();
           break;
         case MSG_QUIT:

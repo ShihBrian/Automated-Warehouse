@@ -11,7 +11,7 @@
 * Handles all drawing/memory synchronization for the
 * User Interface process
 */
-class MazeUI {
+class WarehouseUI {
   // display offset for better visibility
   static const int XOFF = 2;
   static const int YOFF = 1;
@@ -27,7 +27,7 @@ class MazeUI {
   int num_docks;
 public:
 
-  MazeUI() : display_(), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
+  WarehouseUI() : display_(), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
 
     // clear display and hide cursor
     display_.clear_all();
@@ -52,7 +52,7 @@ public:
   /**
   * Draws the maze itself
   */
-  void draw_maze() {
+  void draw_warehouse() {
     static const char WALL = 219;  // WALL character
     static const char EXIT = 176;  // EXIT character
     static const char HOME = 72;  // EXIT character
@@ -136,10 +136,11 @@ public:
     }
   }
 
-  void draw_runners() {
+  void draw_robots() {
     RobotInfo& rinfo = memory_->rinfo;
-    int newc, newr, busy, task, quantity, restock, deliver;
+    int newc, newr, busy, task, quantity, home;
     int dest[2];
+    int home_coord[2];
     char product[MAX_ROBOTS][MAX_WORD_LENGTH];
     int count = 0;
     bool isdock = false;
@@ -153,7 +154,10 @@ public:
         newc = rinfo.rloc[i][COL_IDX];
         busy = rinfo.busy[i];
         task = rinfo.task[i];
-        if(rinfo.home[i]) {
+        home = rinfo.home[i];
+        home_coord[COL_IDX] = memory_->minfo.home_col;
+        home_coord[ROW_IDX] = memory_->minfo.home_row;
+        if(home) {
           display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
           line_count++;
           check_log(line_count);
@@ -207,7 +211,8 @@ public:
           lastpos_[i][COL_IDX] = newc;
           lastpos_[i][ROW_IDX] = newr;
           display_.set_cursor_position(YOFF + line_count, XOFF + memory_->minfo.cols + 2);
-          if(newc == dest[COL_IDX] && newr == dest[ROW_IDX]){
+          if((newc == dest[COL_IDX] && newr == dest[ROW_IDX]) &&
+              (dest[COL_IDX] != home_coord[COL_IDX] && dest[ROW_IDX] != home_coord[ROW_IDX])){
             isdock = false;
             for(int i=0;i<num_docks;i++){
               if (dock[i][COL_IDX] == dest[COL_IDX] && dock[i][ROW_IDX] == dest[ROW_IDX]){
@@ -245,27 +250,26 @@ public:
     return memory_->quit;
   }
 
-  ~MazeUI() {
+  ~WarehouseUI() {
     // reset console settings
     display_.clear_all();
     display_.reset();
   }
 };
 
-//TODO: Print status updates of robots, probably through socket
 int main() {
 
   // initialize previous locations of characters
-  MazeUI ui;
+  WarehouseUI ui;
   if (!(ui.check_magic())) {
     printf("Shared memory not initialized\n");
     return 0;
   }
-  ui.draw_maze();
+  ui.draw_warehouse();
 
   // continue looping until main program has quit
   while (!ui.quit()) {
-    ui.draw_runners();
+    ui.draw_robots();
     ui.draw_objects();
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
   }

@@ -15,12 +15,12 @@ FILE(COPY data DESTINATION "${CMAKE_BINARY_DIR}/${CONFIGURATION}")
 add_executable(warehouse_ui src/warehouse_ui.cpp)
 target_link_libraries(warehouse_ui Threads::Threads)
 
-set(SERVER_HEADERS src/Order.h src/CircularOrderQueue.h src/robot.h src/server.h src/OrderQueue.h
+set(SERVER_HEADERS src/Menu.h src/CircularOrderQueue.h src/robot.h src/server.h src/OrderQueue.h
         src/warehouse_layout.h src/comm.h src/inventory.h)
 add_executable(server src/server.cpp ${SERVER_HEADERS})
 target_link_libraries(server Threads::Threads)
 
-set(CLIENT_HEADERS src/Order.h src/comm.h)
+set(CLIENT_HEADERS src/Menu.h src/comm.h)
 add_executable(customer src/customer.cpp ${CUSTOMER_HEADERS})
 target_link_libraries(customer Threads::Threads)
 

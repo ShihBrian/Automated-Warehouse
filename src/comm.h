@@ -10,7 +10,6 @@ static const char FAIL_BYTE = 0xFE;
 enum MessageType {
   MSG_CUSTOMER,
   MSG_MANAGER,
-  MSG_ORDER,
   MSG_ITEM,
   MSG_END,
   MSG_INVENTORY,
@@ -60,23 +59,27 @@ char rcv_response(cpen333::process::socket& socket, std::string& msg){
   return success;
 }
 
-//TODO: send generic message
-void send_order(std::vector<Order_item>& Orders,cpen333::process::socket& socket){
+void send_order(Order_item order,cpen333::process::socket &socket){
   const char* str;
-  char success;
   size_t length;
+  send_type(socket,MSG_ITEM);
+  send_size(socket,order.quantity);
+  std::string product = order.product;
+  str = product.c_str();
+  length = strlen(str)+1;
+  send_size(socket,length);
+  socket.write(str,length);
+}
+
+void send_orders(std::vector<Order_item> &Orders, cpen333::process::socket &socket){
+
+  char success;
   std::string msg;
   size_t num_items = Orders.size();
   send_size(socket, num_items);
 
   for(auto& order: Orders){
-    send_type(socket,MSG_ITEM);
-    send_size(socket,order.quantity);
-    std::string product = order.product;
-    str = product.c_str();
-    length = strlen(str)+1;
-    send_size(socket,length);
-    socket.write(str,length);
+    send_order(order,socket);
   }
   send_type(socket,MSG_END);
 
@@ -98,14 +101,13 @@ void send_response(cpen333::process::socket& socket, bool success, std::string m
   socket.write(str,length);
 }
 
-//TODO: do something with success bool
-void send_generic(cpen333::process::socket& socket, char data, bool response){
+void send_int(cpen333::process::socket &socket, char data, bool response){
   char success;
   std::string msg;
   socket.write(&data,1);
 
   if(response) {
-    std::cout << "Send_generic: Waiting for response...";
+    std::cout << "Send_int: Waiting for response...";
     success = rcv_response(socket, msg);
 
     std::cout << msg << std::endl;

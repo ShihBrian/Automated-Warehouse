@@ -1,8 +1,7 @@
-#include "Order.h"
+#include "Menu.h"
 #include "comm.h"
 
 
-//TODO: view inventory
 int main(){
   cpen333::process::socket socket("localhost",55556);
   std::cout << "Client connecting...";
@@ -44,7 +43,7 @@ int main(){
         break;
       case Copt::C_SEND:
         send_type(socket,MSG_CUSTOMER);
-        send_order(Orders,socket);
+        send_orders(Orders, socket);
         break;
       case Copt::C_VIEW_INV:
         Orders.clear();
