@@ -2,6 +2,7 @@
 
 //TODO: auto restock inventory below a user defined threshold, notify UI, fill 1 shelf worth?
 //TODO: return list of shelves that contain product
+//TODO: server class
 void modify_robots(bool add, Comm& comm){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
@@ -79,6 +80,7 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
 
 void service(cpen333::process::socket client, int id, Inventory& inv){
   std::vector<Order_item> Orders;
+  State state = STATE_START;
   Order_item order;
   Comm comm(client);
   std::cout << "Client " << id << " connected" << std::endl;
@@ -108,11 +110,11 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           break;
         case MSG_ADD:
           add_product = true;
-          order_size = 1;
+          order_size = comm.get_size();
           break;
         case MSG_REMOVE:
           remove_product = true;
-          order_size = 1;
+          order_size = comm.get_size();
           break;
         case MSG_ITEM:
           order_size--;

@@ -22,6 +22,14 @@ enum MessageType {
   MSG_QUIT
 };
 
+enum State {
+  STATE_START,
+  STATE_GET_TYPE,
+  STATE_ITEM,
+  STATE_RECEIVED,
+
+};
+
 class Comm {
   cpen333::process::socket& socket;
 

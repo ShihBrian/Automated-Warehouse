@@ -77,13 +77,14 @@ public:
     cin >> thres;
     cout << "Restock quantity: " << endl;
     cin >> quantity;
+    inv_dict.clear();
     comm.query_products(product_list,product_names);
     this->view_inv();
     for(auto& name:product_names){
-      inv_dict[name] = 0;
+        inv_dict[name] = 0;
     }
     for(auto& item:total_inv){
-      if(item.product.length() > 1)
+      if(item.product.length() > 1 && inv_dict.find(item.product) != inv_dict.end())
         inv_dict[item.product] = item.quantity;
     }
     for(auto& item:inv_dict){
