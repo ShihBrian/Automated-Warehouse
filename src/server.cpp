@@ -39,7 +39,7 @@ void find_coordinates(WarehouseInfo& info){
   info.num_docks = count;
 }
 
-void modify_robots(bool add,cpen333::process::socket& client){
+void modify_robots(bool add, Comm& comm){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
   if(add){
@@ -47,10 +47,10 @@ void modify_robots(bool add,cpen333::process::socket& client){
       nrobots++;
       robots.push_back(new Robot(nrobots, incoming_queue));
       robots[robots.size()-1]->start();
-      send_response(client,1,"Successfully added robot");
+      comm.send_response(1,"Successfully added robot");
     }
     else{
-      send_response(client,0,"Already at maximum number of robots");
+      comm.send_response(0,"Already at maximum number of robots");
     }
   }
   else{
@@ -58,10 +58,10 @@ void modify_robots(bool add,cpen333::process::socket& client){
       order.push_back(poison);
       nrobots--;
       incoming_queue.add(order);
-      send_response(client,1,"Successfully removed robot");
+      comm.send_response(1,"Successfully removed robot");
     }
     else{
-      send_response(client,0,"There are no robots to remove");
+      comm.send_response(0,"There are no robots to remove");
     }
   }
 }
@@ -118,6 +118,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
   std::vector<Order_item> temp_Orders;
   std::vector<Order_item> Orders;
   Order_item order;
+  Comm comm(client);
   std::cout << "Client " << id << " connected" << std::endl;
   bool quit = false;
   bool add = false;
@@ -137,11 +138,11 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
       switch (type) {
         case MSG_CUSTOMER:
           add = false;
-          order_size = get_size(client);
+          order_size = comm.get_size();
           break;
         case MSG_MANAGER:
           add = true;
-          order_size = get_size(client);
+          order_size = comm.get_size();
           break;
         case MSG_ADD:
           add_product = true;
@@ -153,8 +154,8 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           break;
         case MSG_ITEM:
           order_size--;
-          order.quantity = get_size(client);
-          str_size = get_size(client);
+          order.quantity = comm.get_size();
+          str_size = comm.get_size();
           client.read_all(buff,str_size);
           product = buff;
           order.product = product;
@@ -168,20 +169,20 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
             if(add_product) {
               add_product = false;
               inv.add_new_item(Orders[0].product,Orders[0].quantity);
-              send_response(client,1,"Adding new product to inventory");
+              comm.send_response(1,"Adding new product to inventory");
             }
             else if(remove_product){
               remove_product = false;
               inv.remove_inv_item(Orders[0].product);
-              send_response(client,1,"Removing product from inventory");
+              comm.send_response( 1,"Removing product from inventory");
             }
             else{
-              if(add) send_response(client,1,"Restocking truck arrived, unloading...");
+              if(add) comm.send_response( 1,"Restocking truck arrived, unloading...");
               else {
                 if(inv.check_stock(Orders))
-                  send_response(client,1,"Delivery truck arrived, waiting to be loaded...");
+                  comm.send_response( 1,"Delivery truck arrived, waiting to be loaded...");
                 else
-                  send_response(client,0,"Not enough inventory to fulfill order");
+                  comm.send_response( 0,"Not enough inventory to fulfill order");
               }
               handle_orders(Orders,inv,add);
               Orders.clear();
@@ -190,7 +191,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           else{
             temp_Orders.clear();
             safe_printf("Order was not received\n");
-            send_response(client,1,"Order receive failed");
+            comm.send_response( 1,"Order receive failed");
           }
           break;
         case MSG_INVENTORY:
@@ -199,29 +200,29 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           for(auto& order :temp_Orders){
             std::cout << order.product << " " << order.quantity << std::endl;
           }
-          send_type(client,MSG_SERVER);
-          send_orders(temp_Orders, client);
+          comm.send_type( MSG_SERVER);
+          comm.send_orders(temp_Orders);
           temp_Orders.clear();
           break;
         case MSG_PRODUCTS:
           inv.get_available_products(temp_Orders);
-          send_type(client,MSG_SERVER);
-          send_orders(temp_Orders, client);
+          comm.send_type( MSG_SERVER);
+          comm.send_orders(temp_Orders);
           temp_Orders.clear();
           break;
         case MSG_MOD_ROBOT:
           client.read(&msg,1);
           if(msg == 1) {
             std::cout << "Adding Robot" << std::endl;
-            modify_robots(1,client);
+            modify_robots(1,comm);
           }
           else if(msg == 2){
             std::cout << "Removing Robot" << std::endl;
-            modify_robots(0,client);
+            modify_robots(0,comm);
           }
           else{
             std::cout << "Modify robot invalid command" << std::endl;
-            send_response(client,1,"Invalid command");
+            comm.send_response( 1,"Invalid command");
           }
           break;
         case MSG_SHELF_INFO:
@@ -232,8 +233,8 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           order = inv.get_shelf_info(shelf.col,shelf.row);
           temp_Orders.clear();
           temp_Orders.push_back(order);
-          send_type(client,MSG_SERVER);
-          send_orders(temp_Orders, client);
+          comm.send_type(MSG_SERVER);
+          comm.send_orders(temp_Orders);
           temp_Orders.clear();
           break;
         case MSG_QUIT:

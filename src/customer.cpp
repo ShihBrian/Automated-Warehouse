@@ -6,7 +6,7 @@ int main(){
   cpen333::process::socket socket("localhost",55556);
   std::cout << "Client connecting...";
   std::cout.flush();
-
+  Comm comm(socket);
   if(socket.open()){
     std::cout << "connected." << std::endl;
   }
@@ -32,7 +32,7 @@ int main(){
       case Copt::C_CREATE:
         products.clear();
         product_list.clear();
-        query_products(product_list,socket,products);
+        comm.query_products(product_list, products);
         create_order(Orders,products);
         break;
       case Copt::C_EDIT:
@@ -42,14 +42,14 @@ int main(){
         print_order(Orders);
         break;
       case Copt::C_SEND:
-        send_type(socket,MSG_CUSTOMER);
-        send_orders(Orders, socket);
+        comm.send_type( MSG_CUSTOMER);
+        comm.send_orders(Orders);
         break;
       case Copt::C_VIEW_INV:
         Orders.clear();
-        send_type(socket,MSG_INVENTORY);
+        comm.send_type(MSG_INVENTORY);
         std::cout << "Current Inventory" << std::endl;
-        receive_inv(socket,Orders);
+        comm.receive_inv(Orders);
         for(auto& order:Orders){
           std::cout << order.product << " " << order.quantity << std::endl;
         }

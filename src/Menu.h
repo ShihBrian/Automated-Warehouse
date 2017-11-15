@@ -5,7 +5,7 @@
 #include "inventory.h"
 
 std::vector<std::string> customer_menu = {"Create Order","Edit Order","Print Order","Send Order","View Inventory"};
-std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Restocking Truck","View Order Status",
+std::vector<std::string> manager_menu = {"Restock","Edit Order","Print Order","Send Restocking Truck",
                                          "View Inventory","Add New Product","Remove Product","Add/Remove Robots",
                                          "Show Shelf Info"};
 std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot"};
@@ -24,7 +24,6 @@ enum Popt {
   M_EDIT,
   M_PRINT,
   M_SEND,
-  M_VIEW_ORDER_STATUS,
   M_VIEW_INV,
   M_ADD_NEW_PROD,
   M_REMOVE_PROD,
@@ -43,6 +42,14 @@ void print_menu(std::vector<std::string> menu){
   std::cout << "=========================================" << std::endl;
   std::cout << "Enter number: ";
   std::cout.flush();
+}
+
+void print_order(std::vector<Order_item>& Orders){
+  std::cout << "Current Order List:" << std::endl;
+
+  for(auto& order: Orders){
+    std::cout << order.product << " : " << order.quantity << std::endl;
+  }
 }
 
 int create_order(std::vector<Order_item>& Orders, std::vector<std::string> products){
@@ -67,14 +74,6 @@ int create_order(std::vector<Order_item>& Orders, std::vector<std::string> produ
     order.quantity = quantity;
     Orders.push_back(order);
     valid = false;
-  }
-}
-
-void print_order(std::vector<Order_item>& Orders){
-  std::cout << "Current Order List:" << std::endl;
-
-  for(auto& order: Orders){
-    std::cout << order.product << " : " << order.quantity << std::endl;
   }
 }
 
