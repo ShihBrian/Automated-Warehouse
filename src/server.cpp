@@ -158,13 +158,13 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           for(auto& order :Orders){
             std::cout << order.product << " " << order.quantity << std::endl;
           }
-          comm.send_type( MSG_SERVER);
+          comm.send_type(MSG_SERVER);
           comm.send_orders(Orders);
           break;
         case MSG_PRODUCTS:
           Orders.clear();
           inv.get_available_products(Orders);
-          comm.send_type( MSG_SERVER);
+          comm.send_type(MSG_SERVER);
           comm.send_orders(Orders);
           break;
         case MSG_MOD_ROBOT:
@@ -179,7 +179,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           }
           else{
             std::cout << "Modify robot invalid command" << std::endl;
-            comm.send_response( 1,"Invalid command");
+            comm.send_response(1,"Invalid command");
           }
           break;
         case MSG_SHELF_INFO:

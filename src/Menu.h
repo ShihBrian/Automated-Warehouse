@@ -4,10 +4,9 @@
 #include "server.h"
 #include "inventory.h"
 
-std::vector<std::string> customer_menu = {"Create Order","Send Order","View Inventory"};
-std::vector<std::string> manager_menu = {"Restock","Send Restocking Truck", "View Inventory","Add New Product",
-                                         "Remove Product","Add/Remove Robots","Show Shelf Info"};
-std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot"};
+const std::vector<std::string> customer_menu = {"Create Order","Send Order","View Inventory"};
+const std::vector<std::string> manager_menu = {"Restock","Send Restocking Truck", "View Inventory","Add New Product", "Remove Product","Add/Remove Robots","Show Shelf Info"};
+const std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot"};
 
 enum Copt {
   C_CREATE = 1,
@@ -27,18 +26,6 @@ enum Popt {
   M_QUIT
 };
 
-void print_menu(std::vector<std::string> menu){
-  std::cout << std::endl;
-  std::cout << "=========================================" << std::endl;
-  for(int i=1;i<=menu.size();i++){
-    std::cout << " (" << i << ") " << menu[i-1] << std::endl;
-  }
-  std::cout << " (" << menu.size()+1 << ") Done" << std::endl;
-  std::cout << "=========================================" << std::endl;
-  std::cout << "Enter number: ";
-  std::cout.flush();
-}
-
 class Order_Menu {
   std::vector<Order_item> Orders;
   std::map<std::string,int> order_dict;
@@ -52,6 +39,18 @@ class Order_Menu {
 
   public:
     Order_Menu () : Orders(), order_dict() {}
+
+    void print_menu(std::vector<std::string> menu){
+      std::cout << std::endl;
+      std::cout << "=========================================" << std::endl;
+      for(int i=1;i<=menu.size();i++){
+        std::cout << " (" << i << ") " << menu[i-1] << std::endl;
+      }
+      std::cout << " (" << menu.size()+1 << ") Done" << std::endl;
+      std::cout << "=========================================" << std::endl;
+      std::cout << "Enter number: ";
+      std::cout.flush();
+    }
 
     std::vector<Order_item> create_order(std::vector<std::string> products){
       Order_item order;

@@ -23,7 +23,7 @@ int main(){
   Orders.push_back(order);
 
   while(!quit){
-    print_menu(customer_menu);
+    order_menu.print_menu(customer_menu);
     std::cin >> cmd;
     std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
     switch(cmd){

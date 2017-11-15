@@ -27,7 +27,7 @@ int main(){
   Orders.push_back(order);
 
   while(!quit){
-    print_menu(manager_menu);
+    order_menu.print_menu(manager_menu);
     cin >> cmd;
     cin.ignore (numeric_limits<streamsize>::max(), '\n');
     switch(cmd){
