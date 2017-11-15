@@ -105,16 +105,20 @@ class Robot : public cpen333::thread::thread_object {
       return true;
     }
     // Recursively search for our goal.
-    if (col > 0 && (minfo_.warehouse[col - 1][row] != WALL_CHAR && minfo_.warehouse[col - 1][row] != SHELF_CHAR) && minfo_.visited[col - 1][row] == 0 && this->find_path(col - 1, row)) {
+    if (col > 0 && (minfo_.warehouse[col - 1][row] != WALL_CHAR && minfo_.warehouse[col - 1][row] != SHELF_CHAR)
+                   && minfo_.warehouse[col - 1][row] != DOCK_CHAR && minfo_.visited[col - 1][row] == 0 && this->find_path(col - 1, row)) {
       return true;
     }
-    if (col < minfo_.cols && (minfo_.warehouse[col + 1][row] != WALL_CHAR && minfo_.warehouse[col + 1][row] != SHELF_CHAR) && minfo_.visited[col + 1][row] == 0 && this->find_path(col + 1, row)) {
+    if (col < minfo_.cols && (minfo_.warehouse[col + 1][row] != WALL_CHAR && minfo_.warehouse[col + 1][row] != SHELF_CHAR)
+        && minfo_.warehouse[col + 1][row] != DOCK_CHAR && minfo_.visited[col + 1][row] == 0 && this->find_path(col + 1, row)) {
       return true;
     }
-    if (row > 0 && (minfo_.warehouse[col][row - 1] != WALL_CHAR && minfo_.warehouse[col][row - 1] != SHELF_CHAR) && minfo_.visited[col][row - 1] == 0 && this->find_path(col, row - 1)) {
+    if (row > 0 && (minfo_.warehouse[col][row - 1] != WALL_CHAR && minfo_.warehouse[col][row - 1] != SHELF_CHAR)
+        && minfo_.warehouse[col][row - 1] != DOCK_CHAR && minfo_.visited[col][row - 1] == 0 && this->find_path(col, row - 1)) {
       return true;
     }
-    if (row < minfo_.rows && (minfo_.warehouse[col][row + 1] != WALL_CHAR && minfo_.warehouse[col][row + 1] != SHELF_CHAR) && minfo_.visited[col][row + 1] == 0 && this->find_path(col, row + 1)) {
+    if (row < minfo_.rows && (minfo_.warehouse[col][row + 1] != WALL_CHAR && minfo_.warehouse[col][row + 1] != SHELF_CHAR)
+        && minfo_.warehouse[col][row + 1] != DOCK_CHAR && minfo_.visited[col][row + 1] == 0 && this->find_path(col, row + 1)) {
       return true;
     }
 
@@ -126,8 +130,9 @@ class Robot : public cpen333::thread::thread_object {
   }
 
   void go(){
+    bool blocked = true;
     for(auto& coordinate : path) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(60));
+      std::this_thread::sleep_for(std::chrono::milliseconds(70));
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         memory_->rinfo.rloc[idx_][COL_IDX] = coordinate.first;

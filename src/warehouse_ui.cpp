@@ -193,9 +193,13 @@ public:
           }
         }
       }
+
       display_.set_cursor_position(YOFF + lastpos_[i][ROW_IDX], XOFF + lastpos_[i][COL_IDX]);
       std::printf("%c", EMPTY_CHAR);
+
       if(busy) {
+        display_.set_cursor_position(YOFF + newr, XOFF + newc);
+        std::printf("%c", me);
         if (newc != lastpos_[i][COL_IDX]
             || newr != lastpos_[i][ROW_IDX]) {
           // zero out last spot and update known location
@@ -210,10 +214,6 @@ public:
           }
         }
       }
-
-      // print runner at new locationrinfo
-      display_.set_cursor_position(YOFF + newr, XOFF + newc);
-      std::printf("%c", me);
 
     }
   }
@@ -248,7 +248,7 @@ int main() {
   while (!ui.quit()) {
     ui.draw_robots();
     ui.draw_objects();
-    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
   }
 
   return 0;
