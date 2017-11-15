@@ -1,5 +1,5 @@
-#ifndef LAB6_ORDER_H
-#define LAB6_ORDER_H
+#ifndef MENU_H
+#define MENU_H
 
 #include "server.h"
 #include "inventory.h"
@@ -91,4 +91,4 @@ class Order_Menu {
     }
 };
 
-#endif //LAB6_ORDER_H
+#endif //MENU_H

@@ -12,7 +12,6 @@
 #define SHELF_CHAR 'S'
 #define DOCK_CHAR 'D'
 
-
 #define COL_IDX 0
 #define ROW_IDX 1
 
@@ -25,5 +24,11 @@
 #define DEFAULT_ROBOTS 2
 
 #define MAZE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\warehouse1.txt"
+
+#define SHELF_MAX_WEIGHT 100
+#define ROBOT_MAX_WEIGHT 50
+
+#define SHELF_MAX_WEIGHT 100
+#define ROBOT_MAX_WEIGHT 50
 
 #endif //CONSTANTS_H

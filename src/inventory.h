@@ -2,9 +2,9 @@
 #define INVENTORY_H
 
 #include <cpen333/process/mutex.h>
-
-#define SHELF_MAX_WEIGHT 100
-#define ROBOT_MAX_WEIGHT 50
+#include <cpen333/process/shared_memory.h>
+#include <map>
+#include "SharedData.h"
 
 struct Order_item{
   std::string product;
@@ -279,6 +279,5 @@ class Inventory {
       return -1;
     }
 };
-
 
 #endif //INVENTORY_H

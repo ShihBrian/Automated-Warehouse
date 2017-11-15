@@ -186,8 +186,9 @@ class Robot : public cpen333::thread::thread_object {
       memory_->rinfo.busy[idx_] = 0;
       memory_->rinfo.home[idx_] = 1;
       memory_->minfo.order_status[add][order_id]--;
+      memory_->rinfo.dest[idx_][COL_IDX] = 0;
+      memory_->rinfo.dest[idx_][ROW_IDX] = 0;
     }
-
   }
 
   int main() {
@@ -214,6 +215,7 @@ class Robot : public cpen333::thread::thread_object {
           this->go();
           {
             std::lock_guard<decltype(mutex_)> lock(mutex_);
+            safe_printf("Dest col %d row %d\n",x,y);
             memory_->rinfo.dest[idx_][COL_IDX] = x;
             memory_->rinfo.dest[idx_][ROW_IDX] = y;
             memory_->rinfo.quantity[idx_] = order.quantity;

@@ -5,11 +5,11 @@ X S S S S S X
 X S S S S S X
 X S S S S S X
 X S S S S S X
-X S S S S S X
+X S S S S SHX
 D          HX
 D          HX
 D          HX
-X S S S S S X
+X S S S S SHX
 X S S S S S X
 X S S S S S X
 X S S S S S X

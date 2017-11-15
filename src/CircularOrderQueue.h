@@ -1,5 +1,5 @@
-#ifndef LAB6_CIRCULARORDERQUEUE_H
-#define LAB6_CIRCULARORDERQUEUE_H
+#ifndef CIRCULARORDERQUEUE_H
+#define CIRCULARORDERQUEUE_H
 
 #include "OrderQueue.h"
 #include <cpen333/thread/semaphore.h>
@@ -58,4 +58,4 @@ class CircularOrderQueue : public virtual OrderQueue {
 
 };
 
-#endif //LAB6_CIRCULARORDERQUEUE_H
+#endif //CIRCULARORDERQUEUE_H

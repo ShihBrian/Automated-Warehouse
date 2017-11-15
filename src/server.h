@@ -21,7 +21,7 @@ CircularOrderQueue incoming_queue;
 int num_docks = 0;
 int nrobots = DEFAULT_ROBOTS;
 
-void load_maze(const std::string& filename, WarehouseInfo& minfo) {
+void load_warehouse(const std::string &filename, WarehouseInfo &minfo) {
 
   // initialize number of rows and columns
   minfo.rows = 0;
@@ -54,7 +54,7 @@ void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 
 }
 
-void init_runners(const WarehouseInfo& minfo, RobotInfo& rinfo) {
+void init_robots(const WarehouseInfo &minfo, RobotInfo &rinfo) {
   rinfo.nrobot = 0;
   Coordinate home;
   for(int col = 0; col < minfo.cols; col++) {
@@ -75,4 +75,34 @@ void init_runners(const WarehouseInfo& minfo, RobotInfo& rinfo) {
   }
 }
 
+void find_coordinates(WarehouseInfo& info){
+  Coordinate dock;
+  int count = 0;
+  for(int col = 0; col < info.cols; col++){
+    for(int row = 0; row < info.rows; row++){
+      if(info.warehouse[col][row] == 'D'){
+        if (col > 0 && info.warehouse[col - 1][row] == EMPTY_CHAR){
+          dock.col = col-1;
+          dock.row = row;
+        }
+        else if (col < info.cols && info.warehouse[col + 1][row] == EMPTY_CHAR){
+          dock.col = col+1;
+          dock.row = row;
+        }
+        else if (row > 0 && info.warehouse[col][row - 1] == EMPTY_CHAR){
+          dock.col = col;
+          dock.row = row-1;
+        }
+        else if (row < info.rows && info.warehouse[col][row + 1] == EMPTY_CHAR){
+          dock.col = col;
+          dock.row = row+1;
+        }
+        info.dock_col[count] = dock.col;
+        info.dock_row[count] = dock.row;
+        count++;
+      }
+    }
+  }
+  info.num_docks = count;
+}
 #endif //SERVER_H

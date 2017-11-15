@@ -1,37 +1,5 @@
 #include "server.h"
 
-
-void find_coordinates(WarehouseInfo& info){
-  Coordinate dock;
-  int count = 0;
-  for(int col = 0; col < info.cols; col++){
-    for(int row = 0; row < info.rows; row++){
-      if(info.warehouse[col][row] == 'D'){
-        if (col > 0 && info.warehouse[col - 1][row] == EMPTY_CHAR){
-          dock.col = col-1;
-          dock.row = row;
-        }
-        else if (col < info.cols && info.warehouse[col + 1][row] == EMPTY_CHAR){
-          dock.col = col+1;
-          dock.row = row;
-        }
-        else if (row > 0 && info.warehouse[col][row - 1] == EMPTY_CHAR){
-          dock.col = col;
-          dock.row = row-1;
-        }
-        else if (row < info.rows && info.warehouse[col][row + 1] == EMPTY_CHAR){
-          dock.col = col;
-          dock.row = row+1;
-        }
-        info.dock_col[count] = dock.col;
-        info.dock_row[count] = dock.row;
-        count++;
-      }
-    }
-  }
-  info.num_docks = count;
-}
-
 void modify_robots(bool add, Comm& comm){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
@@ -234,18 +202,18 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
 
 int main() {
   // read warehouse from command-line, default to maze0
-  std::string maze = MAZE_NAME;
+  std::string warehouse = MAZE_NAME;
 
   cpen333::process::shared_object<SharedData> memory(MAZE_MEMORY_NAME);
   cpen333::process::mutex mutex1(MAZE_MUTEX_NAME);
   WarehouseInfo info;
-  RobotInfo runners;
-  load_maze(maze, info);
-  init_runners(info, runners);
+  RobotInfo robot_info;
+  load_warehouse(warehouse, info);
+  init_robots(info, robot_info);
   find_coordinates(info);
 
   memory->minfo = info;
-  memory->rinfo = runners;
+  memory->rinfo = robot_info;
   memory->quit = 0;
   memory->magic = MAGIC;
   for(int i=0;i<MAX_WAREHOUSE_DOCKS;i++){

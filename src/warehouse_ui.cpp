@@ -205,11 +205,12 @@ public:
           // zero out last spot and update known location
           lastpos_[i][COL_IDX] = newc;
           lastpos_[i][ROW_IDX] = newr;
-          if((newc == dest[COL_IDX] && newr == dest[ROW_IDX])){
-              if(!dock_num) {
+          if((newc == dest[COL_IDX] && newr == dest[ROW_IDX]) && !home){
+
+              if(!dock_num && quantity != 0) {
                 set_and_check_log(line_count);
-                if(task == 1) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);
-                else std::printf("Robot %c unloading %d %s from shelf",me, quantity, product[i]);
+                if (task == 1) std::printf("Robot %c stocking shelf with %d %s", me, quantity, product[i]);
+                else std::printf("Robot %c unloading %d %s from shelf", me, quantity, product[i]);
               }
           }
         }

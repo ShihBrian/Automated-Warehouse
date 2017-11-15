@@ -1,5 +1,5 @@
-#ifndef LAB4_MAZE_RUNNER_COMMON_H
-#define LAB4_MAZE_RUNNER_COMMON_H
+#ifndef SHAREDDATA_H
+#define SHAREDDATA_H
 
 #include "Constants.h"
 
@@ -36,4 +36,4 @@ struct SharedData {
   int magic;
 };
 
-#endif //LAB4_MAZE_RUNNER_COMMON_H
+#endif //SHAREDDATA_H
