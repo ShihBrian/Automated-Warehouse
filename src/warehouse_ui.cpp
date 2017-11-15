@@ -1,11 +1,8 @@
-#include "warehouse_layout.h"
-
+#include "SharedData.h"
 #include <cpen333/process/shared_memory.h>
 #include <cpen333/process/mutex.h>
 #include <cpen333/console.h>
-#include <cstdio>
 #include <thread>
-#include <chrono>
 
 /**
 * Handles all drawing/memory synchronization for the

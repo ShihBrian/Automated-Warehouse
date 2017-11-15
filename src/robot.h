@@ -7,7 +7,8 @@
 #include <deque>
 #include "OrderQueue.h"
 #include "safe_printf.h"
-#include "warehouse_layout.h"
+#include "SharedData.h"
+#include "Constants.h"
 #include <cpen333/process/shared_memory.h>
 #include <cpen333/process/mutex.h>
 #include <cpen333/process/semaphore.h>
@@ -186,7 +187,6 @@ class Robot : public cpen333::thread::thread_object {
   }
 
   int main() {
-    bool quit = false;
     char cmd = 0;
     if (!(this->check_magic())) {
       safe_printf("Shared memory not initialized\n");
@@ -195,14 +195,14 @@ class Robot : public cpen333::thread::thread_object {
     int x = this->get_start_col();
     int y = this->get_start_row();
     std::vector<Coordinate> orders;
-    while (!quit) {
+    while (true) {
       orders = orders_.get();
+      if (orders[0].row == 999 && orders[0].col == 999) {
+        break;
+      }
       this->init_order(orders);
       for (auto &order:orders) {
-        if (order.row == 999 && order.col == 999) {
-          quit = true;
-          break;
-        }
+
         end_col = order.col;
         end_row = order.row;
         if (this->find_path(x, y)) {

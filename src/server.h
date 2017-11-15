@@ -10,8 +10,9 @@
 #include <map>
 #include "robot.h"
 #include "CircularOrderQueue.h"
-#include "warehouse_layout.h"
+#include "SharedData.h"
 #include "inventory.h"
+#include "comm.h"
 
 Coordinate home;
 
