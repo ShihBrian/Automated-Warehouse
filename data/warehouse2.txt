@@ -1,19 +1,19 @@
 XXXXXXXXXXXXXXXXX
 X               X    
-X XXXXXX XXXXXX X  
+X SSSSS   SSSSS X
 X               X
-X XXXXXX XXXXXX X
+X SSSSS   SSSSS X
 X               X
-X XXXXXX XXXXXX X
+X SSSSS H SSSSS X
+X       H       D
+X SSSSS H SSSSS D
+X       H       D
+X SSSSS H SSSSS D
+X       H       D
+X SSSSS H SSSSS X
 X               X
-X XXXXXX XXXXXX X
-X       H       X
-X XXXXXX XXXXXX X
+X SSSSS   SSSSS X
 X               X
-X XXXXXX XXXXXX X
-X               X
-X XXXXXX XXXXXX X
-X               X
-X XXXXXX XXXXXX X
+X SSSSS   SSSSS X
 X               X
 XXXXXXXXXXXXXXXXX

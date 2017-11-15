@@ -17,8 +17,11 @@ int main(){
   while(!quit){
     cmd = manager.get_menu_option();
     switch(cmd){
-      case Popt::M_RESTOCK:
+      case Popt::M_CREATE:
         manager.create_order();
+        break;
+      case Popt::M_RESTOCK:
+        manager.restock_low_inv();
         break;
       case Popt::M_SEND:
         manager.send_order();

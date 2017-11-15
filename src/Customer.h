@@ -3,6 +3,13 @@
 
 #include "Client.h"
 
+enum Copt {
+  C_CREATE = 1,
+  C_SEND,
+  C_VIEW_INV,
+  C_QUIT
+};
+
 class Customer : public Client {
 public:
   Customer(Comm& comm) : Client(comm) {}

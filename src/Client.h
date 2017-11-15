@@ -12,6 +12,7 @@ class Client {
   vector<string> product_names;
   Order_Menu order_menu;
   vector<Order_item> Orders;
+  vector<Order_item> total_inv;
   int cmd;
   public:
 
@@ -27,14 +28,13 @@ class Client {
     }
 
     void view_inv(){
-      Orders.clear();
+      total_inv.clear();
       comm.send_type(MSG_INVENTORY);
       cout << "Current Inventory" << endl;
-      comm.receive_inv(Orders);
-      for(auto& order:Orders){
+      comm.receive_inv(total_inv);
+      for(auto& order:total_inv){
         cout << order.product << " " << order.quantity << endl;
       }
-      Orders.clear();
     }
 };
 

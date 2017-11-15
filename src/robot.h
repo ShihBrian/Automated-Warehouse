@@ -90,7 +90,7 @@ class Robot : public cpen333::thread::thread_object {
 
   int find_path(int col, int row) {
     if (memory_->quit) return -1;
-    // Make the move (if it's wrong, we will backtrack later.
+    // Make the move. If it's wrong, we will backtrack later.
     minfo_.visited[col][row] = 1;
     path.push_back({col,row});
     // Check if we have reached our goal.

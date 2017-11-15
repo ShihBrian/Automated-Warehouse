@@ -3,6 +3,18 @@
 
 #include "Client.h"
 
+enum Popt {
+  M_CREATE = 1,
+  M_RESTOCK,
+  M_SEND,
+  M_VIEW_INV,
+  M_ADD_NEW_PROD,
+  M_REMOVE_PROD,
+  M_MOD_ROBOT,
+  M_SHELF_INFO,
+  M_QUIT
+};
+
 class Manager : public Client {
   Order_item order;
   int col,row;
@@ -19,6 +31,7 @@ public:
   void send_order(){
     comm.send_type(MSG_MANAGER);
     comm.send_orders(Orders);
+    Orders.clear();
   }
 
   void add_new_product(){
@@ -55,6 +68,32 @@ public:
     order = comm.get_shelf_info(col,row);
     if(order.product == "N/A") cout << "Not a valid shelf location" << endl;
     else cout << "Product: " << order.product << endl << "Quantity: " << order.quantity << endl;
+  }
+
+  void restock_low_inv(){
+    int thres,quantity;
+    map<std::string,int> inv_dict;
+    cout << "Low inventory threshold: " << endl;
+    cin >> thres;
+    cout << "Restock quantity: " << endl;
+    cin >> quantity;
+    comm.query_products(product_list,product_names);
+    this->view_inv();
+    for(auto& name:product_names){
+      inv_dict[name] = 0;
+    }
+    for(auto& item:total_inv){
+      if(item.product.length() > 1)
+        inv_dict[item.product] = item.quantity;
+    }
+    for(auto& item:inv_dict){
+      if (item.second < thres){
+        order.product = item.first;
+        order.quantity = quantity;
+        Orders.push_back(order);
+      }
+    }
+    this->send_order();
   }
 };
 

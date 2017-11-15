@@ -5,26 +5,10 @@
 #include "inventory.h"
 
 const std::vector<std::string> customer_menu = {"Create Order","Send Order","View Inventory"};
-const std::vector<std::string> manager_menu = {"Restock","Send Restocking Truck", "View Inventory","Add New Product", "Remove Product","Add/Remove Robots","Show Shelf Info"};
+const std::vector<std::string> manager_menu = {"Create Order", "Restock Low Inventory", "Send Restocking Truck",
+                                               "View Inventory","Add New Product", "Remove Product","Add/Remove Robots",
+                                               "Show Shelf Info"};
 const std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot"};
-
-enum Copt {
-  C_CREATE = 1,
-  C_SEND,
-  C_VIEW_INV,
-  C_QUIT
-};
-
-enum Popt {
-  M_RESTOCK = 1,
-  M_SEND,
-  M_VIEW_INV,
-  M_ADD_NEW_PROD,
-  M_REMOVE_PROD,
-  M_MOD_ROBOT,
-  M_SHELF_INFO,
-  M_QUIT
-};
 
 class Order_Menu {
   std::vector<Order_item> Orders;

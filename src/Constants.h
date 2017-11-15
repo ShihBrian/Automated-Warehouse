@@ -7,7 +7,6 @@
 
 #define WALL_CHAR 'X'
 #define EMPTY_CHAR ' '
-#define EXIT_CHAR 'E'
 #define HOME_CHAR 'H'
 #define SHELF_CHAR 'S'
 #define DOCK_CHAR 'D'

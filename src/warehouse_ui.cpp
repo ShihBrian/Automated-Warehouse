@@ -38,10 +38,9 @@ public:
   * Draws the maze itself
   */
   void draw_warehouse() {
-    static const char WALL = 219;  // WALL character
-    static const char EXIT = 176;  // EXIT character
+    static const char WALL = 254;  // WALL character
     static const char HOME = 72;  // EXIT character
-    static const char SHELF = 83;
+    static const char SHELF = 219;
     static const char DOCK = 68;
     WarehouseInfo& minfo = memory_->minfo;
     RobotInfo& rinfo = memory_->rinfo;
@@ -55,9 +54,6 @@ public:
         char ch = minfo.warehouse[c][r];
         if (ch == WALL_CHAR) {
           std::printf("%c", WALL);
-        }
-        else if (ch == EXIT_CHAR) {
-          std::printf("%c", EXIT);
         }
         else if (ch == HOME_CHAR){
           std::printf("%c", HOME);
