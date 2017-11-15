@@ -6,11 +6,11 @@ int main(){
   cpen333::process::socket socket("localhost",55556);
   std::cout << "Client connecting...";
   std::cout.flush();
-  Comm comm(socket);
   if(socket.open()){
     std::cout << "connected." << std::endl;
   }
-
+  Comm comm(socket);
+  Order_Menu order_menu;
   int cmd;
   bool quit = false;
   std::vector<Order_item> product_list;
@@ -30,19 +30,11 @@ int main(){
     std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
     switch(cmd){
       case Copt::C_CREATE:
-        products.clear();
-        product_list.clear();
         comm.query_products(product_list, products);
-        create_order(Orders,products);
-        break;
-      case Copt::C_EDIT:
-        edit_order(Orders);
-        break;
-      case Copt::C_PRINT:
-        print_order(Orders);
+        Orders = order_menu.create_order(products);
         break;
       case Copt::C_SEND:
-        comm.send_type( MSG_CUSTOMER);
+        comm.send_type(MSG_CUSTOMER);
         comm.send_orders(Orders);
         break;
       case Copt::C_VIEW_INV:

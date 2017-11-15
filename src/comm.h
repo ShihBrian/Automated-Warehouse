@@ -167,6 +167,7 @@ class Comm {
     }
 
     void query_products(std::vector<Order_item> &Orders, std::vector<std::string> &products) {
+      products.clear();
       Orders.clear();
       send_type(MSG_PRODUCTS);
       receive_inv(Orders);

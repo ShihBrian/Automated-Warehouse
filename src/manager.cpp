@@ -11,6 +11,7 @@ int main(){
     cout << "connected." << endl;
   }
   Comm comm(socket);
+  Order_Menu order_menu;
   int cmd,col,row;
   bool quit = false;
   vector<Order_item> product_list;
@@ -31,16 +32,8 @@ int main(){
     cin.ignore (numeric_limits<streamsize>::max(), '\n');
     switch(cmd){
       case Popt::M_RESTOCK:
-        products.clear();
-        product_list.clear();
         comm.query_products(product_list,products);
-        create_order(Orders,products);
-        break;
-      case Popt::M_EDIT:
-        edit_order(Orders);
-        break;
-      case Popt::M_PRINT:
-        print_order(Orders);
+        Orders = order_menu.create_order(products);
         break;
       case Popt::M_SEND:
         comm.send_type(MSG_MANAGER);
