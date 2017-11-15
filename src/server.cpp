@@ -235,7 +235,7 @@ int main() {
     robot->start();
   }
 
-  cpen333::process::socket_server server(55556);
+  cpen333::process::socket_server server(SOCKET_PORT);
   server.open();
   std::cout << "Server started on port " << server.port() << std::endl;
 

@@ -31,4 +31,6 @@
 #define SHELF_MAX_WEIGHT 100
 #define ROBOT_MAX_WEIGHT 50
 
+#define SOCKET_PORT 55556
+
 #endif //CONSTANTS_H

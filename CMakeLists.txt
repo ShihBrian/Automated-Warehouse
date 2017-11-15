@@ -16,11 +16,11 @@ add_executable(warehouse_ui src/warehouse_ui.cpp)
 target_link_libraries(warehouse_ui Threads::Threads)
 
 set(SERVER_HEADERS src/Menu.h src/CircularOrderQueue.h src/robot.h src/server.h src/OrderQueue.h
-        src/SharedData.h src/comm.h src/inventory.h src/Constants.h)
+        src/SharedData.h src/comm.h src/inventory.h src/Constants.h src/Client.h)
 add_executable(server src/server.cpp ${SERVER_HEADERS})
 target_link_libraries(server Threads::Threads)
 
-set(CLIENT_HEADERS src/Menu.h src/comm.h)
+set(CLIENT_HEADERS src/Menu.h src/comm.h src/Client.h src/Manager.h src/Customer.h)
 add_executable(customer src/customer.cpp ${CUSTOMER_HEADERS})
 target_link_libraries(customer Threads::Threads)
 
