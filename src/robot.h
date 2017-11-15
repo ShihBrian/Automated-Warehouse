@@ -49,8 +49,8 @@ class Robot : public cpen333::thread::thread_object {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       idx_ = memory_->rinfo.nrobot;
       memory_->rinfo.nrobot++;
-      home.col = memory_->minfo.home_col;
-      home.row = memory_->minfo.home_row;
+      home.col = memory_->rinfo.rloc[idx_][COL_IDX];
+      home.row = memory_->rinfo.rloc[idx_][ROW_IDX];
     }
 
     // get current location

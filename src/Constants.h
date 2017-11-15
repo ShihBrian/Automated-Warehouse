@@ -22,6 +22,8 @@
 #define MAX_WORD_LENGTH 100
 #define MAGIC 123654
 
+#define DEFAULT_ROBOTS 2
+
 #define MAZE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\warehouse1.txt"
 
 #endif //CONSTANTS_H

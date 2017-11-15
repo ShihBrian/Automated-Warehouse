@@ -1,9 +1,5 @@
 #include "server.h"
 
-std::vector<Robot*> robots;
-CircularOrderQueue incoming_queue;
-int nrobots = 4;
-int num_docks;
 
 void find_coordinates(WarehouseInfo& info){
   Coordinate dock;
@@ -40,7 +36,7 @@ void modify_robots(bool add, Comm& comm){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
   if(add){
-    if(nrobots < MAX_ROBOTS) {
+    if(nrobots < num_home) {
       nrobots++;
       robots.push_back(new Robot(nrobots, incoming_queue));
       robots[robots.size()-1]->start();
@@ -247,8 +243,6 @@ int main() {
   load_maze(maze, info);
   init_runners(info, runners);
   find_coordinates(info);
-  info.home_col = home.col;
-  info.home_row = home.row;
 
   memory->minfo = info;
   memory->rinfo = runners;

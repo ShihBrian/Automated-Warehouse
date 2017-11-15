@@ -19,7 +19,6 @@ class WarehouseUI {
 
   // previous positions of runners
   int lastpos_[MAX_ROBOTS][2];
-  int home_[2];   // exit location
 public:
 
   WarehouseUI() : display_(), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
@@ -33,9 +32,6 @@ public:
       lastpos_[i][COL_IDX] = -1;
       lastpos_[i][ROW_IDX] = -1;
     }
-
-    home_[COL_IDX] = memory_->minfo.home_col;
-    home_[ROW_IDX] = memory_->minfo.home_row;
 
   }
   /**
@@ -135,10 +131,16 @@ public:
     char product[MAX_ROBOTS][MAX_WORD_LENGTH];
     int count = 0;
     int dock_num;
-    // draw all runner locations
-    for (size_t i = 0; i<rinfo.nrobot; ++i) {
-      char me = 'A'+i;
+    int nrobots;
 
+    {
+      std::lock_guard<decltype(mutex_)> lock(mutex_);
+      nrobots = rinfo.nrobot;
+    }
+
+    // draw all runner locations
+    for (size_t i = 0; i<nrobots; ++i) {
+      char me = 'A'+i;
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         newr = rinfo.rloc[i][ROW_IDX];
@@ -147,8 +149,8 @@ public:
         task = rinfo.task[i];
         home = rinfo.home[i];
         dock_num = rinfo.dock[i];
-        home_coord[COL_IDX] = memory_->minfo.home_col;
-        home_coord[ROW_IDX] = memory_->minfo.home_row;
+        home_coord[COL_IDX] = memory_->rinfo.rloc[i][COL_IDX];
+        home_coord[ROW_IDX] = memory_->rinfo.rloc[i][ROW_IDX];
         if(home) {
           set_and_check_log(line_count);
           std::printf("Robot %c home", me);
@@ -201,6 +203,8 @@ public:
           lastpos_[i][ROW_IDX] = newr;
           if((newc == dest[COL_IDX] && newr == dest[ROW_IDX]) &&
               (dest[COL_IDX] != home_coord[COL_IDX] && dest[ROW_IDX] != home_coord[ROW_IDX])){
+              set_and_check_log(line_count);
+              std::printf("Robot %d reached destination",me);
               if(!dock_num) {
                 set_and_check_log(line_count);
                 if(task == 1) std::printf("Robot %c stocking shelf with %d %s",me, quantity, product[i]);

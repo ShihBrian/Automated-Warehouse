@@ -14,7 +14,12 @@
 #include "inventory.h"
 #include "comm.h"
 
-Coordinate home;
+std::vector<Coordinate> homes;
+int num_home = 0;
+std::vector<Robot*> robots;
+CircularOrderQueue incoming_queue;
+int num_docks = 0;
+int nrobots = DEFAULT_ROBOTS;
 
 void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 
@@ -51,19 +56,22 @@ void load_maze(const std::string& filename, WarehouseInfo& minfo) {
 
 void init_runners(const WarehouseInfo& minfo, RobotInfo& rinfo) {
   rinfo.nrobot = 0;
-
+  Coordinate home;
   for(int col = 0; col < minfo.cols; col++) {
     for (int row = 0; row < minfo.rows; row++) {
       if(minfo.warehouse[col][row] == 'H'){
         home.col = col;
         home.row = row;
+        num_home++;
+        homes.push_back(home);
       }
     }
   }
-
-  for (size_t i=0; i<MAX_ROBOTS; ++i) {
-    rinfo.rloc[i][COL_IDX] = home.col;
-    rinfo.rloc[i][ROW_IDX] = home.row;
+  int count = 0;
+  for(auto& home:homes){
+    rinfo.rloc[count][COL_IDX] = home.col;
+    rinfo.rloc[count][ROW_IDX] = home.row;
+    count++;
   }
 }
 

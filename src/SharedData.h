@@ -12,8 +12,6 @@ struct WarehouseInfo {
   unsigned dock_row[MAX_WAREHOUSE_DOCKS];
   int curr_dock = 0;
   int num_docks;
-  unsigned home_row;
-  unsigned home_col;
   unsigned restock = 0;
   unsigned deliver = 0;
   int order_status[2][MAX_WAREHOUSE_DOCKS];
