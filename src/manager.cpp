@@ -55,22 +55,16 @@ int main(){
         cin.ignore (numeric_limits<streamsize>::max(), '\n');
         cout << "Enter weight of item" << endl;
         cin >> order.quantity;
-        Orders.clear();
-        Orders.push_back(order);
         comm.send_type(MSG_ADD);
-        comm.send_orders(Orders);
+        comm.send_single_order(order);
         break;
       case Popt::M_REMOVE_PROD:
-        products.clear();
-        product_list.clear();
         comm.query_products(product_list,products);
         print_menu(products);
         cin >> cmd;
-        Orders.clear();
         order.product = products[cmd-1];
-        Orders.push_back(order);
         comm.send_type(MSG_REMOVE);
-        comm.send_orders(Orders);
+        comm.send_single_order(order);
         break;
       case Popt::M_MOD_ROBOT:
         print_menu(mod_robot_menu);

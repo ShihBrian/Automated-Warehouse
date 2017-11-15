@@ -78,7 +78,6 @@ class Comm {
     }
 
     void send_orders(std::vector<Order_item> &Orders) {
-
       char success;
       std::string msg;
       size_t num_items = Orders.size();
@@ -89,10 +88,21 @@ class Comm {
       }
       send_type(MSG_END);
 
-      std::cout << "Send_order: Waiting for response...";
+      std::cout << "Orders sent, waiting for response...";
       success = rcv_response(msg);
       std::cout << msg << std::endl;
       if (success == SUCCESS_BYTE) Orders.clear();
+    }
+
+    void send_single_order(Order_item order){
+      std::string msg;
+      send_size(1);
+      send_order(order);
+      send_type(MSG_END);
+
+      std::cout << "Orders sent, waiting for response...";
+      rcv_response(msg);
+      std::cout << msg << std::endl;
     }
 
     void send_response(bool success, std::string msg) {

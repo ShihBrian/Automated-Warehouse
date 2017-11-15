@@ -115,7 +115,6 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
 }
 
 void service(cpen333::process::socket client, int id, Inventory& inv){
-  std::vector<Order_item> temp_Orders;
   std::vector<Order_item> Orders;
   Order_item order;
   Comm comm(client);
@@ -159,13 +158,11 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           client.read_all(buff,str_size);
           product = buff;
           order.product = product;
-          temp_Orders.push_back(order);
+          Orders.push_back(order);
           break;
         case MSG_END:
           if(order_size == 0){
             safe_printf("Order successfully received\n");
-            Orders = temp_Orders;
-            temp_Orders.clear();
             if(add_product) {
               add_product = false;
               inv.add_new_item(Orders[0].product,Orders[0].quantity);
@@ -185,30 +182,29 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
                   comm.send_response( 0,"Not enough inventory to fulfill order");
               }
               handle_orders(Orders,inv,add);
-              Orders.clear();
             }
           }
           else{
-            temp_Orders.clear();
             safe_printf("Order was not received\n");
             comm.send_response( 1,"Order receive failed");
           }
+          Orders.clear();
           break;
         case MSG_INVENTORY:
-          inv.get_total_inv(temp_Orders);
+          Orders.clear();
+          inv.get_total_inv(Orders);
           std::cout << "Current Inventory" << std::endl;
-          for(auto& order :temp_Orders){
+          for(auto& order :Orders){
             std::cout << order.product << " " << order.quantity << std::endl;
           }
           comm.send_type( MSG_SERVER);
-          comm.send_orders(temp_Orders);
-          temp_Orders.clear();
+          comm.send_orders(Orders);
           break;
         case MSG_PRODUCTS:
-          inv.get_available_products(temp_Orders);
+          Orders.clear();
+          inv.get_available_products(Orders);
           comm.send_type( MSG_SERVER);
-          comm.send_orders(temp_Orders);
-          temp_Orders.clear();
+          comm.send_orders(Orders);
           break;
         case MSG_MOD_ROBOT:
           client.read(&msg,1);
@@ -231,11 +227,8 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
           client.read(&msg,1);
           shelf.row = msg;
           order = inv.get_shelf_info(shelf.col,shelf.row);
-          temp_Orders.clear();
-          temp_Orders.push_back(order);
           comm.send_type(MSG_SERVER);
-          comm.send_orders(temp_Orders);
-          temp_Orders.clear();
+          comm.send_single_order(order);
           break;
         case MSG_QUIT:
           quit = true;
