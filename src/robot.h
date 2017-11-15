@@ -5,7 +5,7 @@
 #include <iostream>
 #include <thread>
 #include <deque>
-#include "OrderQueue.h"
+#include "CircularOrderQueue.h"
 #include "safe_printf.h"
 #include "SharedData.h"
 #include "Constants.h"
@@ -14,7 +14,7 @@
 #include <cpen333/process/semaphore.h>
 
 class Robot : public cpen333::thread::thread_object {
-  OrderQueue& orders_;
+  CircularOrderQueue& orders_;
   int id_;
   cpen333::process::shared_object<SharedData> memory_;
   cpen333::process::mutex mutex_;
@@ -36,7 +36,7 @@ class Robot : public cpen333::thread::thread_object {
   size_t idx_;   // runner index
   int loc_[2];   // current location
  public:
-  Robot(int id, OrderQueue& orders) :
+  Robot(int id, CircularOrderQueue& orders) :
       id_(id), orders_(orders), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME),
       minfo_(), idx_(0), loc_(), docks_semaphore(DOCKS_SEMAPHORE_NAME)
   {

@@ -1,17 +1,25 @@
 #ifndef CIRCULARORDERQUEUE_H
 #define CIRCULARORDERQUEUE_H
 
-#include "OrderQueue.h"
 #include <cpen333/thread/semaphore.h>
 #include <mutex>
 
 #define CIRCULAR_BUFF_SIZE 8
 
+struct Coordinate {
+  int row;
+  int col;
+  std::string product;
+  int quantity;
+  int add;
+  int order_id;
+};
+
 /**
  * Queue implementation using a circular buffer
  * (i.e. a fixed-size queue)
  */
-class CircularOrderQueue : public virtual OrderQueue {
+class CircularOrderQueue{
   std::vector<Coordinate> buff_[CIRCULAR_BUFF_SIZE];
   cpen333::thread::semaphore producer_;
   cpen333::thread::semaphore consumer_;

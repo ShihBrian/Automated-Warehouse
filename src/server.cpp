@@ -1,5 +1,7 @@
 #include "server.h"
 
+//TODO: auto restock inventory below a user defined threshold, notify UI, fill 1 shelf worth?
+//TODO: return list of shelves that contain product
 void modify_robots(bool add, Comm& comm){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
