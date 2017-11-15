@@ -29,6 +29,7 @@ class Robot : public cpen333::thread::thread_object {
   int add;
   int dock[MAX_WAREHOUSE_DOCKS][2];
   int num_docks;
+  int isdock;
   Coordinate home;
   std::tuple<int,int> coordinates;
   // runner info
@@ -140,37 +141,36 @@ class Robot : public cpen333::thread::thread_object {
     return id_;
   }
 
-  void init_order(std::vector<Coordinate>& orders){
-    Coordinate dock;
+  int get_available_dock(){
     int curr_dock;
     docks_semaphore.wait();
+    {
+      std::lock_guard<decltype(mutex_)> lock(mutex_);
+      curr_dock = memory_->minfo.curr_dock;
+      if (curr_dock < memory_->minfo.num_docks) {
+        end_col = memory_->minfo.dock_col[curr_dock];
+        end_row = memory_->minfo.dock_row[curr_dock];
+        memory_->minfo.curr_dock++;
+      }
+    }
+    return curr_dock + 1;
+  }
+
+  void init_order(std::vector<Coordinate>& orders){
     quantity = orders[0].quantity;
     order_id = orders[0].order_id;
     {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
-      curr_dock = memory_->minfo.curr_dock;
-      if(curr_dock < memory_->minfo.num_docks) {
-        dock.col = memory_->minfo.dock_col[curr_dock];
-        dock.row = memory_->minfo.dock_row[curr_dock];
-        memory_->minfo.curr_dock++;
-        memory_->rinfo.busy[idx_] = 1;
-        memory_->rinfo.quantity[idx_] = quantity;
-        add = orders[0].add;
-        memory_->rinfo.task[idx_] = add;
-        for(int i=0;i<orders[0].product.length();i++){
-          memory_->rinfo.product[idx_][i] = orders[0].product[i];
-        }
-        memory_->rinfo.product[idx_][orders[0].product.length()] = '\0';
+      memory_->rinfo.busy[idx_] = 1;
+      memory_->rinfo.quantity[idx_] = quantity;
+      add = orders[0].add;
+      memory_->rinfo.task[idx_] = add;
+      for(int i=0;i<orders[0].product.length();i++){
+        memory_->rinfo.product[idx_][i] = orders[0].product[i];
       }
+      memory_->rinfo.product[idx_][orders[0].product.length()] = '\0';
       memory_->rinfo.home[idx_] = 0;
       memory_->rinfo.dock[idx_] = 0;
-    }
-
-    for(auto& order : orders){
-      if(order.col == -1 && order.row == -1){
-        order.col = dock.col;
-        order.row = dock.row;
-      }
     }
     orders.push_back({home.row,home.col});
   }
@@ -178,12 +178,11 @@ class Robot : public cpen333::thread::thread_object {
   void order_finish(){
     {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
-      memory_->minfo.curr_dock--;
       memory_->rinfo.busy[idx_] = 0;
       memory_->rinfo.home[idx_] = 1;
       memory_->minfo.order_status[add][order_id]--;
     }
-    docks_semaphore.notify();
+
   }
 
   int main() {
@@ -202,9 +201,9 @@ class Robot : public cpen333::thread::thread_object {
       }
       this->init_order(orders);
       for (auto &order:orders) {
-
         end_col = order.col;
         end_row = order.row;
+        if(order.col == -1 && order.row == -1) isdock = get_available_dock();
         if (this->find_path(x, y)) {
           std::tie(y, x) = coordinates;
           this->go();
@@ -215,11 +214,19 @@ class Robot : public cpen333::thread::thread_object {
             memory_->rinfo.quantity[idx_] = order.quantity;
             if(x == home.col && y == home.row)
               this->order_finish();
-            for(int i=0;i<num_docks;i++){
-              if(x == dock[i][COL_IDX] && y == dock[i][ROW_IDX]) memory_->rinfo.dock[idx_] = i+1;
-            }
+            if(isdock) memory_->rinfo.dock[idx_] = isdock;
           }
           std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+
+          if(isdock) {
+            {
+              std::lock_guard<decltype(mutex_)> lock(mutex_);
+              memory_->minfo.curr_dock--;
+            }
+            isdock = 0;
+            docks_semaphore.notify();
+          }
+
         } else {
           safe_printf("Failed to find destination\n");
         }
