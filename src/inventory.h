@@ -32,6 +32,8 @@ class Inventory {
   std::vector<int> default_weight = {2,3,1,2,11};
   std::vector<Order_item> available_products;
   cpen333::process::mutex mutex_;
+  int threshold = 0;
+  int auto_quantity = 0;
   public:
     Inventory(WarehouseInfo &maze) : minfo(maze),memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
       for (int r = 0; r < minfo.rows; r++) {
@@ -233,6 +235,7 @@ class Inventory {
       for(int i = 0; i<available_products.size();i++){
         if (available_products[i].product == product){
           available_products.erase(available_products.begin()+i);
+          total_inv.erase(product);
           return 1;
         }
       }
@@ -277,6 +280,38 @@ class Inventory {
         }
       }
       return -1;
+    }
+
+    int check_threshold (std::vector<Order_item>& Orders) {
+      std::map<std::string,int> inv_dict;
+      Order_item order;
+      int quantity;
+      bool restock = false;
+      if(threshold > 0) {
+        for (auto &product:available_products) {
+          inv_dict[product.product] = 0;
+        }
+        for (auto &item:total_inv) {
+          if (item.first.length() > 1 && inv_dict.find(item.first) != inv_dict.end())
+            inv_dict[item.first] = item.second;
+        }
+        for (auto &item:inv_dict) {
+          if (item.second < threshold) {
+            if(auto_quantity == 0) quantity = (threshold - item.second) + 1;
+            else quantity = auto_quantity;
+            order.product = item.first;
+            order.quantity = quantity;
+            Orders.push_back(order);
+            restock = true;
+          }
+        }
+      }
+      return restock;
+    }
+
+    void set_auto_restock(int thres, int quantity){
+      threshold = thres;
+      auto_quantity = quantity;
     }
 };
 

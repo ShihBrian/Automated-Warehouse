@@ -24,7 +24,7 @@ int main(){
         customer.send_order();
         break;
       case Copt::C_VIEW_INV:
-        customer.view_inv();
+        customer.view_inv(true);
         break;
       case Copt::C_QUIT:
         quit = true;

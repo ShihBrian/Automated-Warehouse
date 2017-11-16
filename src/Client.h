@@ -27,13 +27,15 @@ class Client {
       Orders = order_menu.create_order(product_names);
     }
 
-    void view_inv(){
+    void view_inv(bool print){
       total_inv.clear();
       comm.send_type(MSG_INVENTORY);
-      cout << "Current Inventory" << endl;
       comm.receive_inv(total_inv);
-      for(auto& order:total_inv){
-        cout << order.product << " " << order.quantity << endl;
+      if(print) {
+        cout << "Current Inventory" << endl;
+        for (auto &order:total_inv) {
+          cout << order.product << " " << order.quantity << endl;
+        }
       }
     }
 };

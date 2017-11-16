@@ -3,6 +3,7 @@
 //TODO: auto restock inventory below a user defined threshold, notify UI, fill 1 shelf worth?
 //TODO: return list of shelves that contain product
 //TODO: server class
+//TODO: i
 void modify_robots(bool add, Comm& comm){
   Coordinate poison = {999,999};
   std::vector<Coordinate> order;
@@ -62,9 +63,12 @@ void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
         coordinates.clear();
       }
       inv.update_inv(Orders, add);
+      Orders.clear();
+      add = inv.check_threshold(Orders);
     }
     else std::cout << "Not enough stock" << std::endl;
-  } else { //restocking
+  }
+  if(add){ //restocking
     for (auto &order:Orders) {
       //list of coordinates the robot must visit in order to fulfil an order
       coordinates = inv.get_available_shelf(order,Orders.size(),order_id);
@@ -116,6 +120,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
         else if(type == MSG_PRODUCTS) state = STATE_PRODUCTS;
         else if(type == MSG_SHELF_INFO) state = STATE_SHELF;
         else if(type == MSG_MOD_ROBOT) state = STATE_MOD_ROBOT;
+        else if(type == MSG_AUTO) state = STATE_AUTO;
         else if(type == MSG_QUIT) state = STATE_QUIT;
         break;
       case STATE_ITEM:
@@ -198,7 +203,7 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
         }
         else{
           std::cout << "Modify robot invalid command" << std::endl;
-          comm.send_response(1,"Invalid command");
+          comm.send_response(0,"Invalid command");
         }
         state = STATE_START;
         break;
@@ -210,6 +215,21 @@ void service(cpen333::process::socket client, int id, Inventory& inv){
         order = inv.get_shelf_info(shelf.col,shelf.row);
         comm.send_type(MSG_SERVER);
         comm.send_single_order(order);
+        state = STATE_START;
+        break;
+      case STATE_AUTO:
+        int thres,quantity;
+        client.read(&msg,1);
+        thres = msg;
+        client.read(&msg,1);
+        quantity = msg;
+        std::cout << "Threshold " << thres << " Quantity: " << quantity << std::endl;
+        if(thres >=0 && quantity >= 0) comm.send_response(1,"Threshold and quantity received");
+        else comm.send_response(0,"Invalid threshold or quantity value");
+        inv.set_auto_restock(thres,quantity);
+        Orders.clear();
+        if(inv.check_threshold(Orders))
+          handle_orders(Orders,inv,true);
         state = STATE_START;
         break;
       case STATE_QUIT:

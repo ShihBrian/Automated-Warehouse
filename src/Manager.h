@@ -5,19 +5,19 @@
 
 enum Popt {
   M_CREATE = 1,
-  M_RESTOCK,
   M_SEND,
   M_VIEW_INV,
   M_ADD_NEW_PROD,
   M_REMOVE_PROD,
   M_MOD_ROBOT,
   M_SHELF_INFO,
+  M_RESTOCK,
   M_QUIT
 };
 
 class Manager : public Client {
   Order_item order;
-  int col,row;
+  int col,row,threshold,quantity;
 public:
   Manager(Comm& comm) : Client(comm) {}
 
@@ -70,31 +70,14 @@ public:
     else cout << "Product: " << order.product << endl << "Quantity: " << order.quantity << endl;
   }
 
-  void restock_low_inv(){
-    int thres,quantity;
-    map<std::string,int> inv_dict;
-    cout << "Low inventory threshold: " << endl;
-    cin >> thres;
-    cout << "Restock quantity: " << endl;
+  void restock(){
+    comm.send_type(MSG_AUTO);
+    cout << "Enter low stock threshold: " << endl;
+    cin >> threshold;
+    cout << "Enter restock quantity: " << endl;
     cin >> quantity;
-    inv_dict.clear();
-    comm.query_products(product_list,product_names);
-    this->view_inv();
-    for(auto& name:product_names){
-        inv_dict[name] = 0;
-    }
-    for(auto& item:total_inv){
-      if(item.product.length() > 1 && inv_dict.find(item.product) != inv_dict.end())
-        inv_dict[item.product] = item.quantity;
-    }
-    for(auto& item:inv_dict){
-      if (item.second < thres){
-        order.product = item.first;
-        order.quantity = quantity;
-        Orders.push_back(order);
-      }
-    }
-    this->send_order();
+    comm.send_int(threshold,false);
+    comm.send_int(quantity,true);
   }
 };
 

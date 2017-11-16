@@ -19,6 +19,7 @@ enum MessageType {
   MSG_SERVER,
   MSG_MOD_ROBOT,
   MSG_SHELF_INFO,
+  MSG_AUTO,
   MSG_QUIT
 };
 
@@ -31,6 +32,7 @@ enum State {
   STATE_PRODUCTS,
   STATE_SHELF,
   STATE_MOD_ROBOT,
+  STATE_AUTO,
   STATE_END,
   STATE_QUIT
 };

@@ -20,14 +20,11 @@ int main(){
       case Popt::M_CREATE:
         manager.create_order();
         break;
-      case Popt::M_RESTOCK:
-        manager.restock_low_inv();
-        break;
       case Popt::M_SEND:
         manager.send_order();
         break;
       case Popt::M_VIEW_INV:
-        manager.view_inv();
+        manager.view_inv(true);
         break;
       case Popt::M_ADD_NEW_PROD:
         manager.add_new_product();
@@ -40,6 +37,9 @@ int main(){
         break;
       case Popt::M_SHELF_INFO:
         manager.get_shelf_info();
+        break;
+      case Popt::M_RESTOCK:
+        manager.restock();
         break;
       case Popt::M_QUIT:
         quit = true;
