@@ -72,9 +72,9 @@ public:
 
   void restock(){
     comm.send_type(MSG_AUTO);
-    cout << "Enter low stock threshold: " << endl;
+    cout << "Enter low stock threshold (0 to disable): " << endl;
     cin >> threshold;
-    cout << "Enter restock quantity: " << endl;
+    cout << "Enter restock quantity (0 to bring stock up to threshold): " << endl;
     cin >> quantity;
     comm.send_int(threshold,false);
     comm.send_int(quantity,true);

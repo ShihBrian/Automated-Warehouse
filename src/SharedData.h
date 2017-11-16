@@ -15,6 +15,7 @@ struct WarehouseInfo {
   unsigned restock = 0;
   unsigned deliver = 0;
   int order_status[2][MAX_WAREHOUSE_DOCKS];
+  bool auto_restock = 0;
 };
 
 struct RobotInfo {

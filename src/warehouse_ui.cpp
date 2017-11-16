@@ -147,6 +147,11 @@ public:
         dock_num = rinfo.dock[i];
         home_coord[COL_IDX] = memory_->rinfo.rloc[i][COL_IDX];
         home_coord[ROW_IDX] = memory_->rinfo.rloc[i][ROW_IDX];
+        if(memory_->minfo.auto_restock){
+          set_and_check_log(line_count);
+          std::printf("Auto restock triggered");
+          memory_->minfo.auto_restock = false;
+        }
         if(home) {
           set_and_check_log(line_count);
           std::printf("Robot %c home", me);

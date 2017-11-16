@@ -306,6 +306,10 @@ class Inventory {
           }
         }
       }
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        memory_->minfo.auto_restock = restock;
+      }
       return restock;
     }
 
