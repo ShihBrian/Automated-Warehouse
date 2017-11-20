@@ -17,10 +17,6 @@
 std::vector<Coordinate> homes;
 int num_home = 0;
 
-CircularOrderQueue incoming_queue;
-int num_docks = 0;
-int nrobots = DEFAULT_ROBOTS;
-
 void load_warehouse(const std::string &filename, WarehouseInfo &minfo) {
 
   // initialize number of rows and columns

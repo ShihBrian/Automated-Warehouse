@@ -27,6 +27,8 @@ target_link_libraries(customer Threads::Threads)
 add_executable(manager src/manager.cpp ${CUSTOMER_HEADERS})
 target_link_libraries(manager Threads::Threads)
 
+add_executable(inv_test test/inv_test.cpp src/inventory.h)
+
 # link with unix realtime library
 if(UNIX AND NOT APPLE)
     target_link_libraries(server rt)
@@ -34,6 +36,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 if(WIN32)
+    target_link_libraries(inv_test wsock32 ws2_32)
     target_link_libraries(customer wsock32 ws2_32)
     target_link_libraries(manager wsock32 ws2_32)
     target_link_libraries(server wsock32 ws2_32)

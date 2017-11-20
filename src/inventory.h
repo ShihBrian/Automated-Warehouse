@@ -5,6 +5,7 @@
 #include <cpen333/process/shared_memory.h>
 #include <map>
 #include "SharedData.h"
+#include "CircularOrderQueue.h"
 
 struct Order_item{
   std::string product;
@@ -226,7 +227,6 @@ class Inventory {
     void add_new_item(std::string product, int weight){
       Order_item item;
       item.product = product;
-      std::cout << "Adding weight " << weight << std::endl;
       item.weight = weight;
       available_products.push_back(item);
     }
@@ -248,6 +248,7 @@ class Inventory {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         for(auto& product : available_products){
           item.product = product.product;
+          item.weight = product.weight;
           products.push_back(item);
         }
       }

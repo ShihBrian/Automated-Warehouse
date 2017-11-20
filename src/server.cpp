@@ -1,6 +1,5 @@
 #include "server.h"
 
-//TODO: server class
 class Server {
   cpen333::process::shared_object<SharedData> memory;
   cpen333::process::mutex mutex1;
@@ -8,6 +7,8 @@ class Server {
   cpen333::process::socket_server server;
   Inventory inv;
   std::vector<Robot*> robots;
+  CircularOrderQueue incoming_queue;
+  int nrobots = DEFAULT_ROBOTS;
 private:
   void modify_robots(bool add, Comm& comm){
     Coordinate poison = {999,999};
@@ -292,7 +293,7 @@ public:
 
 int main(){
   // read warehouse from command-line, default to maze0
-  std::string warehouse = MAZE_NAME;
+  std::string warehouse = WAREHOUSE_NAME;
   WarehouseInfo info;
   RobotInfo robot_info;
   load_warehouse(warehouse, info);
