@@ -41,6 +41,9 @@ int main(){
       case Popt::M_RESTOCK:
         manager.restock();
         break;
+      case Popt::M_SHUTDOWN:
+        manager.shutdown();
+        break;
       case Popt::M_QUIT:
         quit = true;
         break;

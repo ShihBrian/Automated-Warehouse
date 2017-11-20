@@ -7,7 +7,7 @@
 const std::vector<std::string> customer_menu = {"Create Order","Send Order","View Inventory"};
 const std::vector<std::string> manager_menu = {"Create Order", "Send Restocking Truck","View Inventory",
                                                "Add New Product", "Remove Product","Add/Remove Robots",
-                                               "Show Shelf Info", "Set Auto Restock"};
+                                               "Show Shelf Info", "Set Auto Restock","Shutdown Server"};
 const std::vector<std::string> mod_robot_menu = {"Add Robot", "Remove Robot"};
 
 class Order_Menu {

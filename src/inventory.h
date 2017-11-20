@@ -297,8 +297,7 @@ class Inventory {
         }
         for (auto &item:inv_dict) {
           if (item.second < threshold) {
-            if(auto_quantity == 0) quantity = (threshold - item.second) + 1;
-            else quantity = auto_quantity;
+            quantity = (threshold - item.second) + auto_quantity;
             order.product = item.first;
             order.quantity = quantity;
             Orders.push_back(order);

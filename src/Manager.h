@@ -12,6 +12,7 @@ enum Popt {
   M_MOD_ROBOT,
   M_SHELF_INFO,
   M_RESTOCK,
+  M_SHUTDOWN,
   M_QUIT
 };
 
@@ -74,10 +75,14 @@ public:
     comm.send_type(MSG_AUTO);
     cout << "Enter low stock threshold (0 to disable): " << endl;
     cin >> threshold;
-    cout << "Enter restock quantity (0 to bring stock up to threshold): " << endl;
+    cout << "Enter restock quantity (amount past the threshold): " << endl;
     cin >> quantity;
     comm.send_int(threshold,false);
     comm.send_int(quantity,true);
+  }
+
+  void shutdown(){
+    comm.send_type(MSG_QUIT);
   }
 };
 

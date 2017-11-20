@@ -16,7 +16,7 @@
 
 std::vector<Coordinate> homes;
 int num_home = 0;
-std::vector<Robot*> robots;
+
 CircularOrderQueue incoming_queue;
 int num_docks = 0;
 int nrobots = DEFAULT_ROBOTS;
