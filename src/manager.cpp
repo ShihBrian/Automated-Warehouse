@@ -26,11 +26,8 @@ int main(){
       case Popt::M_VIEW_INV:
         manager.view_inv(true);
         break;
-      case Popt::M_ADD_NEW_PROD:
-        manager.add_new_product();
-        break;
-      case Popt::M_REMOVE_PROD:
-        manager.remove_product();
+      case Popt::M_MOD_PROD:
+        manager.modify_products();
         break;
       case Popt::M_MOD_ROBOT:
         manager.modify_robot();

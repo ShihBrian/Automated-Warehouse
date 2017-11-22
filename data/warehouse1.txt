@@ -6,15 +6,7 @@ X S S S S S X
 X S S S S S X
 X S S S S S X
 X S S S S S X
-D         HHX
-D         HHX
-D         HHX
-X S S S S S X
-X S S S S S X
-X S S S S S X
-X S S S S S X
-X S S S S S X
-X S S S S S X
-X S S S S S X
-X           X
+D           X
+D        HHHX
+D        HHHX
 XXXXXXXXXXXXX

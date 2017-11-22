@@ -7,8 +7,7 @@ enum Popt {
   M_CREATE = 1,
   M_SEND,
   M_VIEW_INV,
-  M_ADD_NEW_PROD,
-  M_REMOVE_PROD,
+  M_MOD_PROD,
   M_MOD_ROBOT,
   M_SHELF_INFO,
   M_RESTOCK,
@@ -34,6 +33,13 @@ public:
     comm.send_type(MSG_MANAGER);
     comm.send_orders(Orders);
     Orders.clear();
+  }
+
+  void modify_products(){
+    order_menu.print_menu(mod_product_menu);
+    cin >> cmd;
+    if(cmd == 1) add_new_product();
+    else if(cmd == 2) remove_product();
   }
 
   void add_new_product(){

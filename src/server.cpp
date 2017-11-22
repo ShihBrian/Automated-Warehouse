@@ -135,6 +135,7 @@ public:
     std::cout << "Docks: " << memory->minfo.num_docks << std::endl;
     cpen333::process::semaphore truck_semaphore(TRUCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
 
+    if(num_home < nrobots) nrobots = num_home;
     for (int i = 0; i < nrobots; ++i) {
       robots.push_back(new Robot(i, robot_queue, inv));
     }
