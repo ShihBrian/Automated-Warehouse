@@ -120,11 +120,8 @@ public:
     }
   }
 
-  void print_info(int nrobots,bool del){
+  void print_inv(bool del){
     int count = 2;
-    int num_before, num_after;
-    display_.set_cursor_position(YOFF + memory_->minfo.rows, XOFF);
-    std::printf("Number of Robots: %d", nrobots);
     display_.set_cursor_position(YOFF + memory_->minfo.rows + 1, XOFF);
     std::printf("Current Inventory:");
     for(auto& product:inventory){
@@ -156,7 +153,8 @@ public:
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       nrobots = rinfo.nrobot;
     }
-
+    display_.set_cursor_position(YOFF + memory_->minfo.rows, XOFF);
+    std::printf("Number of Robots: %d", nrobots);
     // draw all runner locations
     for (size_t i = 0; i<nrobots; ++i) {
       char me = 'A'+i;
@@ -252,7 +250,7 @@ public:
                   }
                   prod.clear();
                 }
-                print_info(nrobots, del);
+                print_inv(del);
                 del = false;
               }
           }

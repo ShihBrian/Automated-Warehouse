@@ -111,7 +111,7 @@ class Robot : public cpen333::thread::thread_object {
     dcol = col - end_col;
     drow = row - end_row;
 
-    if(std::abs(dcol)>std::abs(drow)){
+    if(dcol != 0){
       if(dcol > 0) {
         choice[0] = 4;
         choice[1] = 2;

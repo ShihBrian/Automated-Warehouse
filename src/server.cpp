@@ -12,6 +12,7 @@ class Server {
   CircularOrderQueue order_queue;
   CircularOrderQueue robot_queue;
   int nrobots = DEFAULT_ROBOTS;
+  std::vector<Order_item> temp_orders;
 private:
   void modify_robots(bool add, Comm& comm){
     Coordinate poison = {999,999};
@@ -76,8 +77,9 @@ private:
         }
         order_queue.add(coordinates);
         coordinates.clear();
+        temp_orders = Orders;
         Orders.clear();
-        add = inv.check_threshold(Orders);
+        add = inv.check_threshold(temp_orders, Orders);
       }
       else std::cout << "Not enough stock" << std::endl;
     }
@@ -294,8 +296,9 @@ public:
           if (thres >= 0 && quantity >= 0) comm.send_response(1, "Threshold and quantity received");
           else comm.send_response(0, "Invalid threshold or quantity value");
           inv.set_auto_restock(thres, quantity);
+          temp_orders = Orders;
           Orders.clear();
-          if (inv.check_threshold(Orders))
+          if (inv.check_threshold(temp_orders,Orders))
             handle_orders(Orders, inv, true);
           state = STATE_START;
           break;

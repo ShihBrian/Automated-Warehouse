@@ -21,10 +21,8 @@ public:
     std::vector<Coordinate> temp;
     while (true) {
       coordinates = order_queue.get();
-      std::cout << "Got orders" << std::endl;
       if(coordinates[1].col == 998 && coordinates[1].row == 998) break;
       trucks_semaphore.wait();
-      std::cout << "Got dock" << std::endl;
       if(coordinates[0].add) memory_->minfo.restock = 1;
       else memory_->minfo.deliver = 1;
       for(int i=0;i<coordinates.size();i+=2){
@@ -65,7 +63,6 @@ public:
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
       if(done) {
-        std::cout << "Notifying semaphore" << std::endl;
         trucks_semaphore.notify();
         done = false;
       }

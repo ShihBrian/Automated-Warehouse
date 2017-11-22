@@ -197,11 +197,12 @@ class Inventory {
       }
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
-        if(memory_->minfo.order_status[1][id] == -1)
-          memory_->minfo.order_status[1][id] += coordinates.size()/2 + 1;
+        if(memory_->minfo.order_status[0][id] == -1)
+          memory_->minfo.order_status[0][id] += coordinates.size()/2 + 1;
         else
-          memory_->minfo.order_status[1][id] += coordinates.size()/2;
+          memory_->minfo.order_status[0][id] += coordinates.size()/2;
       }
+      std::cout << memory_->minfo.order_status[1][id] <<std::endl;
       return coordinates;
     }
 
@@ -299,16 +300,22 @@ class Inventory {
     return -1;
   }
 
-  int check_threshold (std::vector<Order_item>& Orders) {
+  bool check_threshold (std::vector<Order_item>& temp, std::vector<Order_item>& Orders) {
     std::map<std::string,int> inv_dict;
     Order_item order;
+    std::map<std::string,int> inv_temp;
+    inv_temp = total_inv;
     int quantity;
+    for(auto& item: temp){
+      inv_temp[item.product] -= item.quantity;
+      if(inv_temp[item.product] < 0) inv_temp[item.product] = 0;
+    }
     bool restock = false;
     if(threshold > 0) {
       for (auto &product:available_products) {
         inv_dict[product.product] = 0;
       }
-      for (auto &item:total_inv) {
+      for (auto &item:inv_temp) {
         if (item.first.length() > 1 && inv_dict.find(item.first) != inv_dict.end())
           inv_dict[item.first] = item.second;
       }
