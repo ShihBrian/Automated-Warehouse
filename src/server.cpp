@@ -178,6 +178,7 @@ public:
           client.read_all(buff, str_size);
           product = buff;
           order.product = product;
+          order.weight = comm.get_size();
           Orders.push_back(order);
           if (order_size == 0) state = STATE_RECEIVED;
           break;
@@ -249,9 +250,10 @@ public:
           shelf.col = msg;
           client.read(&msg, 1);
           shelf.row = msg;
-          order = inv.get_shelf_info(shelf.col, shelf.row);
+          Orders = inv.get_shelf_info(shelf.col, shelf.row);
           comm.send_type(MSG_SERVER);
-          comm.send_single_order(order);
+          comm.send_orders(Orders);
+          Orders.clear();
           state = STATE_START;
           break;
         case STATE_AUTO:

@@ -18,8 +18,7 @@ struct Shelf {
   int row = 0;
   int robot_col = 0;
   int robot_row = 0;
-  std::string product = "";
-  int quantity = 0;
+  std::map<std::string,int> products;
   int weight = 0;
 };
 
@@ -114,36 +113,34 @@ class Inventory {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         memory_->minfo.restock = 1;
         memory_->minfo.order_status[1][id] = size;
+
         for(auto& shelf:shelves){
-          if (shelf.product == order.product || shelf.quantity == 0){
-            remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
-            if(remaining_weight > weight ) {
-              quantity = remaining_weight/weight;
-              if(quantity > order.quantity) {
-                quantity = order.quantity;
-                order.quantity = 0;
-              } else {
-                order.quantity -= quantity;
-              }
-              shelf.quantity += quantity;
-              shelf.product = order.product;
-              shelf.weight += quantity*weight;
-              coordinate.col = shelf.robot_col;
-              coordinate.row = shelf.robot_row;
-              coordinate.product = order.product;
-              robot_quantity = ROBOT_MAX_WEIGHT/weight;
-              iterations = quantity/robot_quantity;
-              for(int i=0;i<iterations;i++) {
-                coordinate.quantity = robot_quantity;
-                coordinates.push_back(temp);
-                coordinates.push_back(coordinate);
-              }
-              if(iterations == 0) coordinate.quantity = quantity;
-              else if(quantity % robot_quantity) coordinate.quantity = quantity % robot_quantity;
+          remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
+          if(remaining_weight > weight ) {
+            quantity = remaining_weight/weight;
+            if(quantity > order.quantity) {
+              quantity = order.quantity;
+              order.quantity = 0;
+            } else {
+              order.quantity -= quantity;
+            }
+            shelf.products[order.product] += quantity;
+            shelf.weight += quantity*weight;
+            coordinate.col = shelf.robot_col;
+            coordinate.row = shelf.robot_row;
+            coordinate.product = order.product;
+            robot_quantity = ROBOT_MAX_WEIGHT/weight;
+            iterations = quantity/robot_quantity;
+            for(int i=0;i<iterations;i++) {
+              coordinate.quantity = robot_quantity;
               coordinates.push_back(temp);
               coordinates.push_back(coordinate);
-              if(order.quantity == 0) break;
             }
+            if(iterations == 0) coordinate.quantity = quantity;
+            else if(quantity % robot_quantity) coordinate.quantity = quantity % robot_quantity;
+            coordinates.push_back(temp);
+            coordinates.push_back(coordinate);
+            if(order.quantity == 0) break;
           }
         }
       }
@@ -165,22 +162,22 @@ class Inventory {
           std::lock_guard<decltype(mutex_)> lock(mutex_);
           memory_->minfo.deliver = 1;
           memory_->minfo.order_status[0][id] = size;
-          if (s.quantity > order.quantity) {
-            s.quantity -= order.quantity;
+          if (s.products[order.product] > order.quantity) {
+            s.products[order.product] -= order.quantity;
             s.weight -= order.quantity * weight;
             quantity = order.quantity;
             order.quantity = 0;
           } else {
-            order.quantity -= s.quantity;
-            quantity = s.quantity;
-            s.quantity = 0;
+            order.quantity -= s.products[order.product];
+            quantity = s.products[order.product];
+            s.products[order.product] = 0;
             s.weight = 0;
           }
         }
         int iterations = quantity/robot_quantity;
         coordinate.col = s.robot_col;
         coordinate.row = s.robot_row;
-        coordinate.product = s.product;
+        coordinate.product = order.product;
         for(int i=0;i<iterations;i++){
           quantity -= robot_quantity;
           coordinate.quantity = robot_quantity;
@@ -201,7 +198,7 @@ class Inventory {
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         for(auto& shelf:shelves){
-          if (shelf.product == product && shelf.quantity != 0){
+          if (shelf.products[product] != 0){
             return shelf;
           }
         }
@@ -254,69 +251,72 @@ class Inventory {
       }
     }
 
-    Order_item get_shelf_info(int col, int row){
+    std::vector<Order_item> get_shelf_info(int col, int row){
+      std::vector<Order_item> items;
       Order_item item;
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         for(auto& shelf: shelves){
           if(shelf.col == col && shelf.row == row){
-            item.quantity = shelf.quantity;
-            item.product = shelf.product;
-            item.weight = shelf.weight;
-            return item;
+            for(auto& shelf_item:shelf.products){
+              if(shelf_item.second != 0) {
+                item.quantity = shelf_item.second;
+                item.product = shelf_item.first;
+                item.weight = shelf.weight;
+                items.push_back(item);
+              }
+            }
+            std::cout << "Shelf weight: " << shelf.weight << std::endl;
           }
         }
       }
-      item.product = "N/A";
-      item.quantity = 0;
-      item.weight = 0;
-      return item;
+      return items;
     }
 
-    int get_order_id(){
-      {
-        std::lock_guard<decltype(mutex_)> lock(mutex_);
-        for(int i = 0;i<MAX_WAREHOUSE_DOCKS;i++){
-          if (memory_->minfo.order_status[0][i] == -1 && memory_->minfo.order_status[1][i] == -1) return i;
-        }
+  int get_order_id(){
+    {
+      std::lock_guard<decltype(mutex_)> lock(mutex_);
+      for(int i = 0;i<MAX_WAREHOUSE_DOCKS;i++){
+        if (memory_->minfo.order_status[0][i] == -1 && memory_->minfo.order_status[1][i] == -1) return i;
       }
-      return -1;
     }
+    return -1;
+  }
 
-    int check_threshold (std::vector<Order_item>& Orders) {
-      std::map<std::string,int> inv_dict;
-      Order_item order;
-      int quantity;
-      bool restock = false;
-      if(threshold > 0) {
-        for (auto &product:available_products) {
-          inv_dict[product.product] = 0;
-        }
-        for (auto &item:total_inv) {
-          if (item.first.length() > 1 && inv_dict.find(item.first) != inv_dict.end())
-            inv_dict[item.first] = item.second;
-        }
-        for (auto &item:inv_dict) {
-          if (item.second < threshold) {
-            quantity = (threshold - item.second) + auto_quantity;
-            order.product = item.first;
-            order.quantity = quantity;
-            Orders.push_back(order);
-            restock = true;
-          }
+  int check_threshold (std::vector<Order_item>& Orders) {
+    std::map<std::string,int> inv_dict;
+    Order_item order;
+    int quantity;
+    bool restock = false;
+    if(threshold > 0) {
+      for (auto &product:available_products) {
+        inv_dict[product.product] = 0;
+      }
+      for (auto &item:total_inv) {
+        if (item.first.length() > 1 && inv_dict.find(item.first) != inv_dict.end())
+          inv_dict[item.first] = item.second;
+      }
+      for (auto &item:inv_dict) {
+        if (item.second < threshold) {
+          quantity = (threshold - item.second) + auto_quantity;
+          order.product = item.first;
+          order.quantity = quantity;
+          Orders.push_back(order);
+          restock = true;
         }
       }
-      {
-        std::lock_guard<decltype(mutex_)> lock(mutex_);
-        memory_->minfo.auto_restock = restock;
-      }
-      return restock;
     }
+    {
+      std::lock_guard<decltype(mutex_)> lock(mutex_);
+      memory_->minfo.auto_restock = restock;
+    }
+    return restock;
+  }
 
-    void set_auto_restock(int thres, int quantity){
-      threshold = thres;
-      auto_quantity = quantity;
-    }
+  void set_auto_restock(int thres, int quantity){
+    threshold = thres;
+    auto_quantity = quantity;
+  }
 };
 
 #endif //INVENTORY_H

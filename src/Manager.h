@@ -18,6 +18,7 @@ enum Popt {
 
 class Manager : public Client {
   Order_item order;
+  std::vector<Order_item> items;
   int col,row,threshold,quantity;
 public:
   Manager(Comm& comm) : Client(comm) {}
@@ -66,9 +67,15 @@ public:
     cin >> col;
     cout << "Enter shelf row: " << endl;
     cin >> row;
-    order = comm.get_shelf_info(col,row);
-    if(order.product == "N/A") cout << "Not a valid shelf location" << endl;
-    else cout << "Product: " << order.product << endl << "Quantity: " << order.quantity << endl;
+    items = comm.get_shelf_info(col,row);
+    if(!items.size()) cout << "Not a valid shelf location" << endl;
+    else {
+      cout << "Shelf Information:" << endl;
+      for(auto& item:items)
+        cout << item.product << " " << item.quantity << endl;
+      cout << "Weight: " << items[0].weight << endl;
+    }
+
   }
 
   void restock(){

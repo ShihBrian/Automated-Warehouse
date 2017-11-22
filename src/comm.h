@@ -65,6 +65,7 @@ class Comm {
       length = strlen(str) + 1;
       send_size(length);
       socket.write(str, length);
+      send_size(order.weight);
     }
   public:
     Comm(cpen333::process::socket& socket) : socket(socket) {};
@@ -170,6 +171,7 @@ class Comm {
               socket.read_all(buff, str_size);
               product = buff;
               order.product = product;
+              order.weight = get_size();
               temp_Orders.push_back(order);
               break;
             case MSG_END:
@@ -201,13 +203,13 @@ class Comm {
       }
     }
 
-    Order_item get_shelf_info(int col, int row){
+    std::vector<Order_item> get_shelf_info(int col, int row){
       std::vector<Order_item> Orders;
       send_type(MSG_SHELF_INFO);
       send_int(col, false);
       send_int(row, false);
       receive_inv(Orders);
-      return Orders[0];
+      return Orders;
     }
 };
 #endif //COMM_H
