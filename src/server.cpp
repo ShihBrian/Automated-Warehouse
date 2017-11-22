@@ -44,6 +44,13 @@ private:
     }
   }
 
+  void add_queue_info(Coordinate& coordinate, std::string product, int add, int id, std::vector<Coordinate>& coordinates){
+    coordinate.product = product;
+    coordinate.add = add;
+    coordinate.order_id = id;
+    coordinates.push_back(coordinate);
+  }
+
   void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
     std::vector<Coordinate> coordinates;
     int order_id;
@@ -60,11 +67,15 @@ private:
     if (!add) {
       if (inv.check_stock(Orders)) {
         for (auto &order:Orders) {
-          coordinates = inv.get_coordinates(order,Orders.size(), order_id);
-          coordinates[0].product = order.product;
-          coordinates[0].add = 0;
-          coordinates[0].order_id = order_id;
-          incoming_queue.add(coordinates);
+          std::vector<Coordinate> temp_coord;
+          //list of coordinates the robot must visit in order to fulfil an order
+          coordinates = inv.get_coordinates(order,Orders.size(),order_id);
+          for(int i=0;i<coordinates.size();i+=2) {
+            this->add_queue_info(coordinates[i],order.product,add,order_id,temp_coord);
+            this->add_queue_info(coordinates[i+1],order.product,add,order_id,temp_coord);
+            incoming_queue.add(temp_coord);
+            temp_coord.clear();
+          }
           coordinates.clear();
         }
         inv.update_inv(Orders, add);
@@ -75,12 +86,15 @@ private:
     }
     if(add){ //restocking
       for (auto &order:Orders) {
+        std::vector<Coordinate> temp_coord;
         //list of coordinates the robot must visit in order to fulfil an order
         coordinates = inv.get_available_shelf(order,Orders.size(),order_id);
-        coordinates[0].product = order.product;
-        coordinates[0].add = 1;
-        coordinates[0].order_id = order_id;
-        incoming_queue.add(coordinates);
+        for(int i=0;i<coordinates.size();i+=2) {
+          this->add_queue_info(coordinates[i],order.product,add,order_id,temp_coord);
+          this->add_queue_info(coordinates[i+1],order.product,add,order_id,temp_coord);
+          incoming_queue.add(temp_coord);
+          temp_coord.clear();
+        }
         coordinates.clear();
       }
       inv.update_inv(Orders, add);

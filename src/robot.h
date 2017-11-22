@@ -186,6 +186,7 @@ class Robot : public cpen333::thread::thread_object {
       memory_->rinfo.busy[idx_] = 0;
       memory_->rinfo.home[idx_] = 1;
       memory_->minfo.order_status[add][order_id]--;
+      std::cout << "Order status decrement" << std::endl;
       memory_->rinfo.dest[idx_][COL_IDX] = 0;
       memory_->rinfo.dest[idx_][ROW_IDX] = 0;
     }

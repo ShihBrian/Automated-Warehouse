@@ -112,8 +112,6 @@ class Inventory {
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         memory_->minfo.restock = 1;
-        memory_->minfo.order_status[1][id] = size;
-
         for(auto& shelf:shelves){
           remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
           if(remaining_weight > weight ) {
@@ -136,13 +134,20 @@ class Inventory {
               coordinates.push_back(temp);
               coordinates.push_back(coordinate);
             }
-            if(iterations == 0) coordinate.quantity = quantity;
-            else if(quantity % robot_quantity) coordinate.quantity = quantity % robot_quantity;
-            coordinates.push_back(temp);
-            coordinates.push_back(coordinate);
+            if(iterations == 0) {
+              coordinate.quantity = quantity;
+              coordinates.push_back(temp);
+              coordinates.push_back(coordinate);
+            }
+            else if(quantity % robot_quantity) {
+              coordinate.quantity = quantity % robot_quantity;
+              coordinates.push_back(temp);
+              coordinates.push_back(coordinate);
+            }
             if(order.quantity == 0) break;
           }
         }
+        memory_->minfo.order_status[1][id] += coordinates.size()/2 + 1;
       }
       return coordinates;
     }
@@ -174,6 +179,7 @@ class Inventory {
             s.weight = 0;
           }
         }
+
         int iterations = quantity/robot_quantity;
         coordinate.col = s.robot_col;
         coordinate.row = s.robot_row;
@@ -190,6 +196,10 @@ class Inventory {
           coordinates.push_back(coordinate);
           coordinates.push_back(temp);
         }
+      }
+      {
+        std::lock_guard<decltype(mutex_)> lock(mutex_);
+        memory_->minfo.order_status[0][id] += coordinates.size()/2;
       }
       return coordinates;
     }
