@@ -3,7 +3,7 @@
 #include <cpen333/process/mutex.h>
 #include <cpen333/console.h>
 #include <thread>
-
+#include <map>
 /**
 * Handles all drawing/memory synchronization for the
 * User Interface process
@@ -16,7 +16,8 @@ class WarehouseUI {
   cpen333::console display_;
   cpen333::process::shared_object<SharedData> memory_;
   cpen333::process::mutex mutex_;
-
+  std::map<std::string, int> inventory;
+  std::string prod;
   // previous positions of runners
   int lastpos_[MAX_ROBOTS][2];
 public:
@@ -119,6 +120,28 @@ public:
     }
   }
 
+  void print_info(int nrobots,bool del){
+    int count = 2;
+    int num_before, num_after;
+    display_.set_cursor_position(YOFF + memory_->minfo.rows, XOFF);
+    std::printf("Number of Robots: %d", nrobots);
+    display_.set_cursor_position(YOFF + memory_->minfo.rows + 1, XOFF);
+    std::printf("Current Inventory:");
+    for(auto& product:inventory){
+      display_.set_cursor_position(YOFF + memory_->minfo.rows + count, XOFF);
+      std::printf("                              ");
+      display_.set_cursor_position(YOFF + memory_->minfo.rows + count, XOFF);
+      std::printf("%s %d",product.first.c_str(),product.second);
+      count++;
+    }
+
+    if(del){
+      display_.set_cursor_position(YOFF + memory_->minfo.rows + count, XOFF);
+      std::printf("                              ");
+    }
+
+  }
+
   void draw_robots() {
     RobotInfo& rinfo = memory_->rinfo;
     int newc, newr, busy, task, quantity, home;
@@ -128,13 +151,12 @@ public:
     int count = 0;
     int dock_num;
     int nrobots;
-
+    bool del = false;
     {
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       nrobots = rinfo.nrobot;
     }
-    display_.set_cursor_position(YOFF + memory_->minfo.rows, XOFF);
-    std::printf("Number of Robots: %d", nrobots);
+
     // draw all runner locations
     for (size_t i = 0; i<nrobots; ++i) {
       char me = 'A'+i;
@@ -160,7 +182,6 @@ public:
           rinfo.home[i] = 0;
         }
          */
-
         if (memory_->minfo.restock) {
           set_and_check_log(line_count);
           std::printf("Restocking truck arrived at dock");
@@ -182,6 +203,7 @@ public:
           count++;
         }
         product[i][count] = '\0';
+
         count = 0;
         quantity = rinfo.quantity[i];
         dest[COL_IDX] = rinfo.dest[i][COL_IDX];
@@ -210,15 +232,34 @@ public:
           lastpos_[i][ROW_IDX] = newr;
           if((newc == dest[COL_IDX] && newr == dest[ROW_IDX]) && !home){
               if(!dock_num && quantity != 0) {
+                int c = 0;
+                while(product[i][c] != '\0'){
+                  prod.push_back(product[i][c]);
+                  c++;
+                }
                 set_and_check_log(line_count);
-                if (task == 1) std::printf("Robot %c stocking shelf with %d %s", me, quantity, product[i]);
-                else std::printf("Robot %c unloading %d %s from shelf", me, quantity, product[i]);
+                if (task == 1) {
+                  std::printf("Robot %c stocking shelf with %d %s", me, quantity, product[i]);
+                  inventory[prod] += quantity;
+                  prod.clear();
+                }
+                else{
+                  std::printf("Robot %c unloading %d %s from shelf", me, quantity, product[i]);
+                  inventory[prod] -= quantity;
+                  if(inventory[prod] == 0){
+                    inventory.erase(prod);
+                    del = true;
+                  }
+                  prod.clear();
+                }
+                print_info(nrobots, del);
+                del = false;
               }
           }
         }
       }
-
     }
+
   }
 
   /**

@@ -27,9 +27,6 @@ public:
       std::cout << "Got dock" << std::endl;
       if(coordinates[0].add) memory_->minfo.restock = 1;
       else memory_->minfo.deliver = 1;
-      for(auto& coord:coordinates){
-        std::cout << coord.product << " " << coord.quantity << " " << coord.row << " " << coord.col << std::endl;
-      }
       for(int i=0;i<coordinates.size();i+=2){
         temp.push_back(coordinates[i]);
         temp.push_back(coordinates[i+1]);
@@ -68,6 +65,7 @@ public:
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
       if(done) {
+        std::cout << "Notifying semaphore" << std::endl;
         trucks_semaphore.notify();
         done = false;
       }

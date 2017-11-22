@@ -132,8 +132,11 @@ public:
       memory->minfo.order_status[1][i] = -1;
     }
     cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
-    std::cout << "Docks: " << memory->minfo.num_docks << std::endl;
-    cpen333::process::semaphore truck_semaphore(TRUCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
+    cpen333::process::semaphore truck_semaphore(TRUCKS_SEMAPHORE_NAME);
+
+    for(int i=0;i<memory->minfo.num_docks;i++){
+      truck_semaphore.notify();
+    }
 
     if(num_home < nrobots) nrobots = num_home;
     for (int i = 0; i < nrobots; ++i) {

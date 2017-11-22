@@ -2,6 +2,8 @@
 #include "../src/server.h"
 #include "TestException.h"
 #include <algorithm>
+#include <string>
+#include <map>
 
 using namespace std;
 
@@ -28,7 +30,7 @@ void testGetWeight(string product, int weight, Inventory& inv){
     throw TestException(msg);
   }
 }
-
+/*
 void testInvUpdate(bool add, Inventory& inv,vector<string> products,vector<int>quantity,vector<Order_item>& orders) {
   Order_item item;
   string msg = "testInvUpdate: ";
@@ -44,6 +46,7 @@ void testInvUpdate(bool add, Inventory& inv,vector<string> products,vector<int>q
   }
   orders.clear();
 }
+*/
 
 void testGetProducts(Inventory& inv, vector<string> expected_products){
   vector<Order_item> products;
@@ -70,6 +73,7 @@ void testModProducts(Inventory& inv,string product, int weight, vector<string> e
   testGetProducts(inv,expected_products);
 }
 
+/*
 void testGetShelfInfo(Inventory& inv, int col, int row, int quantity, string product, int weight){
   Order_item order;
   order = inv.get_shelf_info(col,row);
@@ -78,6 +82,7 @@ void testGetShelfInfo(Inventory& inv, int col, int row, int quantity, string pro
     throw TestException(msg);
   }
 }
+*/
 
 void testRestock(Inventory& inv, Order_item order, vector<Coordinate> expected){
   vector<Coordinate> coordinates = inv.get_available_shelf(order, 0,0);
@@ -105,6 +110,21 @@ int main(){
   Order_item order;
   vector<Coordinate> coordinates;
   Coordinate coordinate;
+  std::map<std::string,int> products;
+  char product[] = "Hello";
+  std::string test;
+
+  int count = 0;
+  while(product[count] != '\0'){
+    test.push_back(product[count]);
+    count++;
+  }
+  products[test] = 10;
+  std::printf("%s",test.c_str());
+  for(auto& prod:products){
+    std::printf("%s %d", prod.first.c_str(),prod.second);
+  }
+  /*
   try{
     //Add to inventory
     createItem("Apple",10,orders);
@@ -151,7 +171,7 @@ int main(){
   }catch (TestException& exc) {
     std::cout << exc.what() << std::endl;
   }
-
+*/
 
 
 
