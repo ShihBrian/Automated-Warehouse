@@ -107,6 +107,7 @@ class Inventory {
       std::vector<Coordinate> coordinates;
       weight = this->get_weight(order.product);
       Coordinate temp = {-1,-1};
+      std::vector <Shelf> shelves_backup = shelves;
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         for(auto& shelf:shelves){
@@ -149,11 +150,15 @@ class Inventory {
         else
           memory_->minfo.order_status[1][id] += coordinates.size()/2;
       }
+      if(order.quantity != 0){
+        std::cout << "Not enough space" << std::endl;
+        shelves = shelves_backup;
+        throw 1;
+      }
       return coordinates;
     }
 
     std::vector<Coordinate> get_coordinates(Order_item order, int size, int id){
-
       int weight = this->get_weight(order.product);
       int robot_quantity = ROBOT_MAX_WEIGHT/weight;
       int quantity;

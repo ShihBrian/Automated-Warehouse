@@ -86,7 +86,13 @@ private:
     if(add){ //restocking
       for (auto &order:Orders) {
         //list of coordinates the robot must visit in order to fulfil an order
-        temp = inv.get_available_shelf(order,Orders.size(),order_id);
+        try {
+          temp = inv.get_available_shelf(order, Orders.size(), order_id);
+        }
+        catch(...){
+          std::cout << "No more shelf space" << std::endl;
+          throw;
+        }
         for(auto& coord:temp){
           coord.product = order.product;
           coord.add = add;
@@ -223,14 +229,19 @@ public:
             inv.remove_inv_item(Orders[0].product);
             comm.send_response(1, "Removing product from inventory");
           } else {
-            if (add) comm.send_response(1, "Restocking truck arrived, unloading...");
-            else {
+            if(!add){
               if (inv.check_stock(Orders))
                 comm.send_response(1, "Delivery truck arrived, waiting to be loaded...");
               else
                 comm.send_response(0, "Not enough inventory to fulfill order");
             }
-            handle_orders(Orders, inv, add);
+            try {
+              handle_orders(Orders, inv, add);
+              comm.send_response(1, "Restocking truck arrived, unloading...");
+            }
+            catch(...){
+              comm.send_response(1, "No more shelf space, order cancelled");
+            }
           }
           state = STATE_END;
           break;

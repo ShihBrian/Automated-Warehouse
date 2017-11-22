@@ -1,5 +1,5 @@
-#ifndef LAB5_TESTEXCEPTION_H
-#define LAB5_TESTEXCEPTION_H
+#ifndef TESTEXCEPTION_H
+#define TESTEXCEPTION_H
 
 #include <string>
 #include <exception>
@@ -18,4 +18,4 @@ class TestException : public std::exception {
   }
 };
 
-#endif //LAB5_TESTEXCEPTION_H
+#endif //TESTEXCEPTION_H
