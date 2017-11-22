@@ -153,11 +153,14 @@ public:
           std::printf("Auto restock triggered");
           memory_->minfo.auto_restock = false;
         }
+        /*
         if (home) {
           set_and_check_log(line_count);
           std::printf("Robot %c home", me);
           rinfo.home[i] = 0;
         }
+         */
+
         if (memory_->minfo.restock) {
           set_and_check_log(line_count);
           std::printf("Restocking truck arrived at dock");
@@ -206,7 +209,6 @@ public:
           lastpos_[i][COL_IDX] = newc;
           lastpos_[i][ROW_IDX] = newr;
           if((newc == dest[COL_IDX] && newr == dest[ROW_IDX]) && !home){
-
               if(!dock_num && quantity != 0) {
                 set_and_check_log(line_count);
                 if (task == 1) std::printf("Robot %c stocking shelf with %d %s", me, quantity, product[i]);

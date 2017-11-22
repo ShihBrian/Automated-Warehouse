@@ -19,7 +19,7 @@ private:
     if(add){
       if(nrobots < num_home) {
         nrobots++;
-        robots.push_back(new Robot(nrobots, robot_queue));
+        robots.push_back(new Robot(nrobots, robot_queue, inv));
         robots[robots.size()-1]->start();
         comm.send_response(1,"Successfully added robot");
       }
@@ -76,7 +76,6 @@ private:
         }
         order_queue.add(coordinates);
         coordinates.clear();
-        inv.update_inv(Orders, add);
         Orders.clear();
         add = inv.check_threshold(Orders);
       }
@@ -95,7 +94,6 @@ private:
       }
       order_queue.add(coordinates);
       coordinates.clear();
-      inv.update_inv(Orders, add);
     }
   }
 
@@ -138,7 +136,7 @@ public:
     cpen333::process::semaphore truck_semaphore(TRUCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
 
     for (int i = 0; i < nrobots; ++i) {
-      robots.push_back(new Robot(i, robot_queue));
+      robots.push_back(new Robot(i, robot_queue, inv));
     }
     // start everyone
     for (auto &robot : robots) {

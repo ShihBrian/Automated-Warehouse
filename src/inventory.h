@@ -69,13 +69,11 @@ class Inventory {
       }
     }
 
-    void update_inv(std::vector<Order_item> orders,bool add){
+    void update_inv(std::string product, int quantity, bool add){
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
-        for (auto &order:orders) {
-          if(add) total_inv[order.product] += order.quantity;
-          else total_inv[order.product] -= order.quantity;
-        }
+        if(add) total_inv[product] += quantity;
+        else total_inv[product] -= quantity;
       }
     }
 

@@ -6,9 +6,9 @@ X S S S S S X
 X S S S S S X
 X S S S S S X
 X S S S S S X
-X         HHX
 D         HHX
-X         HHX
+D         HHX
+D         HHX
 X S S S S S X
 X S S S S S X
 X S S S S S X

@@ -12,6 +12,7 @@
 #include <cpen333/process/shared_memory.h>
 #include <cpen333/process/mutex.h>
 #include <cpen333/process/semaphore.h>
+#include "Inventory.h"
 
 class Robot : public cpen333::thread::thread_object {
   CircularOrderQueue& orders_;
@@ -24,21 +25,19 @@ class Robot : public cpen333::thread::thread_object {
   WarehouseInfo minfo_;
   int end_col = 0;
   int end_row = 0;
-  int order_id;
-  int quantity;
-  int add;
+  int order_id, quantity, add, num_docks, isdock, order_quantity;
+  std::string product;
+  Inventory& inv;
   int dock[MAX_WAREHOUSE_DOCKS][2];
-  int num_docks;
-  int isdock;
   Coordinate home;
   std::tuple<int,int> coordinates;
   // runner info
   size_t idx_;   // runner index
   int loc_[2];   // current location
  public:
-  Robot(int id, CircularOrderQueue& orders) :
+  Robot(int id, CircularOrderQueue& orders, Inventory& inv) :
       id_(id), orders_(orders), memory_(WAREHOUSE_MEMORY_NAME), mutex_(WAREHOUSE_MUTEX_NAME),
-      minfo_(), idx_(0), loc_(), docks_semaphore(DOCKS_SEMAPHORE_NAME)
+      minfo_(), idx_(0), loc_(), docks_semaphore(DOCKS_SEMAPHORE_NAME), inv(inv)
   {
     char def_prod[] = "N/A";
     // copy warehouse contents
@@ -61,6 +60,7 @@ class Robot : public cpen333::thread::thread_object {
     memory_->rinfo.quantity[idx_] = 0;
     memory_->rinfo.home[idx_] = 1;
     memory_->rinfo.dock[idx_] = 0;
+
     for(int i=0;i<4;i++) {
       memory_->rinfo.product[idx_][i] = def_prod[i];
     }
@@ -170,6 +170,9 @@ class Robot : public cpen333::thread::thread_object {
       memory_->rinfo.quantity[idx_] = quantity;
       add = orders[0].add;
       memory_->rinfo.task[idx_] = add;
+      if(add) order_quantity = orders[1].quantity;
+      else order_quantity = orders[0].quantity;
+      product = orders[0].product;
       for(int i=0;i<orders[0].product.length();i++){
         memory_->rinfo.product[idx_][i] = orders[0].product[i];
       }
@@ -188,6 +191,7 @@ class Robot : public cpen333::thread::thread_object {
       memory_->minfo.order_status[add][order_id]--;
       memory_->rinfo.dest[idx_][COL_IDX] = 0;
       memory_->rinfo.dest[idx_][ROW_IDX] = 0;
+      inv.update_inv(product, order_quantity, add);
     }
   }
 
