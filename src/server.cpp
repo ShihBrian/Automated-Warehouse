@@ -148,7 +148,6 @@ public:
         case STATE_GET_TYPE:
           client.read_all(&msg, 1);
           type = msg & 0xFF;
-          std::cout << "Type " << type << std::endl;
           if (type == MSG_CUSTOMER || type == MSG_MANAGER || type == MSG_ADD || type == MSG_REMOVE) {
             order_size = comm.get_size();
             state = STATE_ITEM;

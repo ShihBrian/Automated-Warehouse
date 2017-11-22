@@ -228,15 +228,21 @@ class Inventory {
       available_products.push_back(item);
     }
 
-    int remove_inv_item(std::string product){
+    void remove_inv_item(std::string product){
+      int weight = this->get_weight(product);
       for(int i = 0; i<available_products.size();i++){
         if (available_products[i].product == product){
           available_products.erase(available_products.begin()+i);
           total_inv.erase(product);
-          return 1;
         }
       }
-      return 0;
+
+      for(auto& shelf:shelves){
+        std::cout << "Weight" << weight << std::endl;
+        shelf.weight -= shelf.products[product]*weight;
+        shelf.products.erase(product);
+        std::cout << "Erasing item" << std::endl;
+      }
     }
 
     void get_available_products(std::vector<Order_item>& products){
@@ -266,7 +272,6 @@ class Inventory {
                 items.push_back(item);
               }
             }
-            std::cout << "Shelf weight: " << shelf.weight << std::endl;
           }
         }
       }
