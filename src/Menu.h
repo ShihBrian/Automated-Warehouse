@@ -49,10 +49,10 @@ class Order_Menu {
         if(choice<products.size()+1 && choice > 0) {
           std::cout << "Quantity: " << std::endl;
           std::cin >> quantity;
-          while(std::cin.fail()) {
+          while(std::cin.fail() || quantity == 0) {
             std::cin.clear();
             std::cin.ignore(256,'\n');
-            std::cout << "Quantity must be an integer, try again" << std::endl;
+            std::cout << "Quantity must be an integer or non-zero, try again" << std::endl;
             std::cin >> quantity;
           }
           order_dict[products[choice-1]] += quantity;

@@ -5,6 +5,7 @@ class Server {
   cpen333::process::mutex mutex1;
   cpen333::process::socket client;
   cpen333::process::socket_server server;
+  order_monitor monitor;
   Inventory inv;
   std::vector<Robot*> robots;
   CircularOrderQueue incoming_queue;
@@ -112,12 +113,16 @@ private:
       delete robot;
       robot = nullptr;
     }
+
     memory->quit = 1;
+
+    monitor.join();
+
     server.close();
     cpen333::pause();
   }
 public:
-  Server (WarehouseInfo& info, RobotInfo& rinfo) : mutex1(MAZE_MUTEX_NAME), memory(MAZE_MEMORY_NAME), inv(info), server(SOCKET_PORT) {
+  Server (WarehouseInfo& info, RobotInfo& rinfo) : mutex1(WAREHOUSE_MUTEX_NAME), memory(WAREHOUSE_MEMORY_NAME), inv(info), server(SOCKET_PORT), monitor() {
     memory->minfo = info;
     memory->rinfo = rinfo;
     memory->quit = 0;
@@ -135,6 +140,9 @@ public:
     for (auto &robot : robots) {
       robot->start();
     }
+
+    monitor.start();
+
     inv.init_inv();
   }
 
@@ -307,7 +315,6 @@ public:
 };
 
 int main(){
-  // read warehouse from command-line, default to maze0
   std::string warehouse = WAREHOUSE_NAME;
   WarehouseInfo info;
   RobotInfo robot_info;

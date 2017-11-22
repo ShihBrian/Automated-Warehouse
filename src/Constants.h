@@ -1,9 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define MAZE_MEMORY_NAME "lab4_maze_runner"
-#define MAZE_MUTEX_NAME "lab4_maze_runner_mutex"
+#define WAREHOUSE_MEMORY_NAME "warehouse_memory"
+#define WAREHOUSE_MUTEX_NAME "warehouse_mutex"
 #define DOCKS_SEMAPHORE_NAME "docks_semaphore"
+#define TRUCKS_SEMAPHORE_NAME "trucks_semaphore"
 
 #define WALL_CHAR 'X'
 #define EMPTY_CHAR ' '

@@ -13,6 +13,7 @@
 #include "SharedData.h"
 #include "inventory.h"
 #include "comm.h"
+#include "queue_handlers.h"
 
 std::vector<Coordinate> homes;
 int num_home = 0;

@@ -21,7 +21,7 @@ class WarehouseUI {
   int lastpos_[MAX_ROBOTS][2];
 public:
 
-  WarehouseUI() : display_(), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
+  WarehouseUI() : display_(), memory_(WAREHOUSE_MEMORY_NAME), mutex_(WAREHOUSE_MUTEX_NAME) {
 
     // clear display and hide cursor
     display_.clear_all();
@@ -35,7 +35,7 @@ public:
 
   }
   /**
-  * Draws the maze itself
+  * Draws the warehouse itself
   */
   void draw_warehouse() {
     static const char WALL = 254;  // WALL character
@@ -147,33 +147,33 @@ public:
         dock_num = rinfo.dock[i];
         home_coord[COL_IDX] = memory_->rinfo.rloc[i][COL_IDX];
         home_coord[ROW_IDX] = memory_->rinfo.rloc[i][ROW_IDX];
-        if(memory_->minfo.auto_restock){
+        if (memory_->minfo.auto_restock) {
           set_and_check_log(line_count);
           std::printf("Auto restock triggered");
           memory_->minfo.auto_restock = false;
         }
-        if(home) {
+        if (home) {
           set_and_check_log(line_count);
           std::printf("Robot %c home", me);
           rinfo.home[i] = 0;
         }
-        if(memory_->minfo.restock){
+        if (memory_->minfo.restock) {
           set_and_check_log(line_count);
           std::printf("Restocking truck arrived at dock");
           memory_->minfo.restock = 0;
         }
-        if(memory_->minfo.deliver){
+        if (memory_->minfo.deliver) {
           set_and_check_log(line_count);
           std::printf("Delivery truck arrived at dock");
           memory_->minfo.deliver = 0;
         }
-        if(dock_num){
+        if (dock_num) {
           set_and_check_log(line_count);
-          if(task == 1) std::printf("Robot %c unloading product from truck at dock %d",me, dock_num);
-          else std::printf("Robot %c loading product onto truck at dock %d",me, dock_num);
+          if (task == 1) std::printf("Robot %c unloading product from truck at dock %d", me, dock_num);
+          else std::printf("Robot %c loading product onto truck at dock %d", me, dock_num);
           memory_->rinfo.dock[i] = 0;
         }
-        while(rinfo.product[i][count] != '\0'){
+        while (rinfo.product[i][count] != '\0') {
           product[i][count] = rinfo.product[i][count];
           count++;
         }
@@ -183,14 +183,12 @@ public:
         dest[COL_IDX] = rinfo.dest[i][COL_IDX];
         dest[ROW_IDX] = rinfo.dest[i][ROW_IDX];
 
-        for(int j=0;j<MAX_WAREHOUSE_DOCKS;j++){
-          for(int add=0;add<2;add++){
-            if(memory_->minfo.order_status[add][j] == 0){
-              memory_->minfo.order_status[add][j] = -1;
-              set_and_check_log(line_count);
-              if(add) std::printf("Restocking truck empty, leaving now");
-              else std::printf("Order fulfilled, delivery truck leaving");
-            }
+        for (int add = 0; add < 2; add++) {
+          if (memory_->minfo.done[add]) {
+            memory_->minfo.done[add] = 0;
+            set_and_check_log(line_count);
+            if (add) std::printf("Restocking truck empty, leaving now");
+            else std::printf("Order fulfilled, delivery truck leaving");
           }
         }
       }

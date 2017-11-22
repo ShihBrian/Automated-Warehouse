@@ -37,7 +37,7 @@ class Robot : public cpen333::thread::thread_object {
   int loc_[2];   // current location
  public:
   Robot(int id, CircularOrderQueue& orders) :
-      id_(id), orders_(orders), memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME),
+      id_(id), orders_(orders), memory_(WAREHOUSE_MEMORY_NAME), mutex_(WAREHOUSE_MUTEX_NAME),
       minfo_(), idx_(0), loc_(), docks_semaphore(DOCKS_SEMAPHORE_NAME)
   {
     char def_prod[] = "N/A";
@@ -186,7 +186,6 @@ class Robot : public cpen333::thread::thread_object {
       memory_->rinfo.busy[idx_] = 0;
       memory_->rinfo.home[idx_] = 1;
       memory_->minfo.order_status[add][order_id]--;
-      std::cout << "Order status decrement" << std::endl;
       memory_->rinfo.dest[idx_][COL_IDX] = 0;
       memory_->rinfo.dest[idx_][ROW_IDX] = 0;
     }

@@ -35,7 +35,7 @@ class Inventory {
   int threshold = 0;
   int auto_quantity = 0;
   public:
-    Inventory(WarehouseInfo &maze) : minfo(maze),memory_(MAZE_MEMORY_NAME), mutex_(MAZE_MUTEX_NAME) {
+    Inventory(WarehouseInfo &warehouse) : minfo(warehouse),memory_(WAREHOUSE_MEMORY_NAME), mutex_(WAREHOUSE_MUTEX_NAME) {
       for (int r = 0; r < minfo.rows; r++) {
         for (int c = 0; c < minfo.cols; c++) {
           if (minfo.warehouse[c][r] == SHELF_CHAR) {
@@ -166,7 +166,6 @@ class Inventory {
         {
           std::lock_guard<decltype(mutex_)> lock(mutex_);
           memory_->minfo.deliver = 1;
-          memory_->minfo.order_status[0][id] = size;
           if (s.products[order.product] > order.quantity) {
             s.products[order.product] -= order.quantity;
             s.weight -= order.quantity * weight;
@@ -199,7 +198,7 @@ class Inventory {
       }
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
-        memory_->minfo.order_status[0][id] += coordinates.size()/2;
+        memory_->minfo.order_status[0][id] += coordinates.size()/2 + 1;
       }
       return coordinates;
     }

@@ -4,7 +4,7 @@
 #include <cpen333/thread/semaphore.h>
 #include <mutex>
 
-#define CIRCULAR_BUFF_SIZE 8
+#define CIRCULAR_BUFF_SIZE 20
 
 struct Coordinate {
   int row;
