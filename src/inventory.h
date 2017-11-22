@@ -111,7 +111,6 @@ class Inventory {
       Coordinate temp = {-1,-1};
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
-        memory_->minfo.restock = 1;
         for(auto& shelf:shelves){
           remaining_weight = SHELF_MAX_WEIGHT - shelf.weight;
           if(remaining_weight > weight ) {
@@ -165,7 +164,6 @@ class Inventory {
         Shelf &s = find_product(order.product);
         {
           std::lock_guard<decltype(mutex_)> lock(mutex_);
-          memory_->minfo.deliver = 1;
           if (s.products[order.product] > order.quantity) {
             s.products[order.product] -= order.quantity;
             s.weight -= order.quantity * weight;

@@ -5,10 +5,12 @@ class Server {
   cpen333::process::mutex mutex1;
   cpen333::process::socket client;
   cpen333::process::socket_server server;
-  order_monitor monitor;
+  order_monitor order_monitor;
   Inventory inv;
   std::vector<Robot*> robots;
-  CircularOrderQueue incoming_queue;
+  dock_monitor* dock_mon;
+  CircularOrderQueue order_queue;
+  CircularOrderQueue robot_queue;
   int nrobots = DEFAULT_ROBOTS;
 private:
   void modify_robots(bool add, Comm& comm){
@@ -17,7 +19,7 @@ private:
     if(add){
       if(nrobots < num_home) {
         nrobots++;
-        robots.push_back(new Robot(nrobots, incoming_queue));
+        robots.push_back(new Robot(nrobots, robot_queue));
         robots[robots.size()-1]->start();
         comm.send_response(1,"Successfully added robot");
       }
@@ -29,7 +31,7 @@ private:
       if(nrobots > 0) {
         order.push_back(poison);
         nrobots--;
-        incoming_queue.add(order);
+        robot_queue.add(order);
         comm.send_response(1,"Successfully removed robot");
       }
       else{
@@ -41,15 +43,8 @@ private:
     std::vector<Coordinate> order;
     order.push_back({999,999});
     for(int i=0;i<nrobots;i++){
-      incoming_queue.add(order);
+      robot_queue.add(order);
     }
-  }
-
-  void add_queue_info(Coordinate& coordinate, std::string product, int add, int id, std::vector<Coordinate>& coordinates){
-    coordinate.product = product;
-    coordinate.add = add;
-    coordinate.order_id = id;
-    coordinates.push_back(coordinate);
   }
 
   void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
@@ -68,15 +63,14 @@ private:
     if (!add) {
       if (inv.check_stock(Orders)) {
         for (auto &order:Orders) {
-          std::vector<Coordinate> temp_coord;
           //list of coordinates the robot must visit in order to fulfil an order
           coordinates = inv.get_coordinates(order,Orders.size(),order_id);
-          for(int i=0;i<coordinates.size();i+=2) {
-            this->add_queue_info(coordinates[i],order.product,add,order_id,temp_coord);
-            this->add_queue_info(coordinates[i+1],order.product,add,order_id,temp_coord);
-            incoming_queue.add(temp_coord);
-            temp_coord.clear();
+          for(auto& coord:coordinates){
+            coord.product = order.product;
+            coord.add = add;
+            coord.order_id = order_id;
           }
+          order_queue.add(coordinates);
           coordinates.clear();
         }
         inv.update_inv(Orders, add);
@@ -87,15 +81,14 @@ private:
     }
     if(add){ //restocking
       for (auto &order:Orders) {
-        std::vector<Coordinate> temp_coord;
         //list of coordinates the robot must visit in order to fulfil an order
         coordinates = inv.get_available_shelf(order,Orders.size(),order_id);
-        for(int i=0;i<coordinates.size();i+=2) {
-          this->add_queue_info(coordinates[i],order.product,add,order_id,temp_coord);
-          this->add_queue_info(coordinates[i+1],order.product,add,order_id,temp_coord);
-          incoming_queue.add(temp_coord);
-          temp_coord.clear();
+        for(auto& coord:coordinates){
+          coord.product = order.product;
+          coord.add = add;
+          coord.order_id = order_id;
         }
+        order_queue.add(coordinates);
         coordinates.clear();
       }
       inv.update_inv(Orders, add);
@@ -116,13 +109,14 @@ private:
 
     memory->quit = 1;
 
-    monitor.join();
+    order_monitor.join();
+    dock_mon->join();
 
     server.close();
     cpen333::pause();
   }
 public:
-  Server (WarehouseInfo& info, RobotInfo& rinfo) : mutex1(WAREHOUSE_MUTEX_NAME), memory(WAREHOUSE_MEMORY_NAME), inv(info), server(SOCKET_PORT), monitor() {
+  Server (WarehouseInfo& info, RobotInfo& rinfo) : mutex1(WAREHOUSE_MUTEX_NAME), memory(WAREHOUSE_MEMORY_NAME), inv(info), server(SOCKET_PORT), order_monitor() {
     memory->minfo = info;
     memory->rinfo = rinfo;
     memory->quit = 0;
@@ -132,18 +126,20 @@ public:
       memory->minfo.order_status[1][i] = -1;
     }
     cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
+    cpen333::process::semaphore truck_semaphore(TRUCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
 
     for (int i = 0; i < nrobots; ++i) {
-      robots.push_back(new Robot(i, incoming_queue));
+      robots.push_back(new Robot(i, robot_queue));
     }
     // start everyone
     for (auto &robot : robots) {
       robot->start();
     }
 
-    monitor.start();
-
+    order_monitor.start();
     inv.init_inv();
+    dock_mon = new dock_monitor(order_queue,inv,robot_queue);
+    dock_mon->start();
   }
 
   void service(cpen333::process::socket client, int id, Inventory &inv) {
