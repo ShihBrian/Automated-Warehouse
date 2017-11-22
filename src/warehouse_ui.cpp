@@ -133,7 +133,8 @@ public:
       std::lock_guard<decltype(mutex_)> lock(mutex_);
       nrobots = rinfo.nrobot;
     }
-
+    display_.set_cursor_position(YOFF + memory_->minfo.rows, XOFF);
+    std::printf("Number of Robots: %d", nrobots);
     // draw all runner locations
     for (size_t i = 0; i<nrobots; ++i) {
       char me = 'A'+i;

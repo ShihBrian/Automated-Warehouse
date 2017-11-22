@@ -45,6 +45,8 @@ private:
     for(int i=0;i<nrobots;i++){
       robot_queue.add(order);
     }
+    order.push_back({998,998});
+    order_queue.add(order);
   }
 
   void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
@@ -110,7 +112,11 @@ private:
     memory->quit = 1;
 
     order_monitor.join();
+    safe_printf("Order monitor done\n");
     dock_mon->join();
+    safe_printf("Dock monitor done\n");
+    delete dock_mon;
+    dock_mon = nullptr;
 
     server.close();
     cpen333::pause();
