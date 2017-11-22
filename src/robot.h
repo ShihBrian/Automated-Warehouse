@@ -89,6 +89,9 @@ class Robot : public cpen333::thread::thread_object {
   }
 
   int find_path(int col, int row) {
+    int choice[4];
+    int dir;
+    int dcol,drow;
     if (memory_->quit) return -1;
     // Make the move. If it's wrong, we will backtrack later.
     minfo_.visited[col][row] = 1;
@@ -104,22 +107,74 @@ class Robot : public cpen333::thread::thread_object {
       }
       return true;
     }
-    // Recursively search for our goal.
-    if (col > 0 && (minfo_.warehouse[col - 1][row] != WALL_CHAR && minfo_.warehouse[col - 1][row] != SHELF_CHAR)
-                   && minfo_.warehouse[col - 1][row] != DOCK_CHAR && minfo_.visited[col - 1][row] == 0 && this->find_path(col - 1, row)) {
-      return true;
+
+    dcol = col - end_col;
+    drow = row - end_row;
+
+    if(std::abs(dcol)>std::abs(drow)){
+      if(dcol > 0) {
+        choice[0] = 4;
+        choice[1] = 2;
+      }
+      else{
+        choice[0] = 2;
+        choice[1] = 4;
+      }
+      if(drow > 0){
+        choice[2] = 1;
+        choice[3] = 3;
+      }
+      else{
+        choice[2] = 3;
+        choice[3] = 1;
+      }
     }
-    if (col < minfo_.cols && (minfo_.warehouse[col + 1][row] != WALL_CHAR && minfo_.warehouse[col + 1][row] != SHELF_CHAR)
-        && minfo_.warehouse[col + 1][row] != DOCK_CHAR && minfo_.visited[col + 1][row] == 0 && this->find_path(col + 1, row)) {
-      return true;
+    else{
+      if(drow > 0){
+        choice[0] = 1;
+        choice[1] = 3;
+      }
+      else{
+        choice[0] = 3;
+        choice[1] = 1;
+      }
+      if(dcol > 0){
+        choice[2] = 4;
+        choice[3] = 2;
+      }
+      else{
+        choice[2] = 2;
+        choice[3] = 4;
+      }
     }
-    if (row > 0 && (minfo_.warehouse[col][row - 1] != WALL_CHAR && minfo_.warehouse[col][row - 1] != SHELF_CHAR)
-        && minfo_.warehouse[col][row - 1] != DOCK_CHAR && minfo_.visited[col][row - 1] == 0 && this->find_path(col, row - 1)) {
-      return true;
-    }
-    if (row < minfo_.rows && (minfo_.warehouse[col][row + 1] != WALL_CHAR && minfo_.warehouse[col][row + 1] != SHELF_CHAR)
-        && minfo_.warehouse[col][row + 1] != DOCK_CHAR && minfo_.visited[col][row + 1] == 0 && this->find_path(col, row + 1)) {
-      return true;
+
+    for(int i=0;i<4;i++) {
+      dir = choice[i];
+
+      if(dir == 4) {
+        if (col > 0 && (minfo_.warehouse[col - 1][row] != WALL_CHAR && minfo_.warehouse[col - 1][row] != SHELF_CHAR)
+            && minfo_.warehouse[col - 1][row] != DOCK_CHAR && minfo_.visited[col - 1][row] == 0 && this->find_path(col - 1, row)) {
+          return true;
+        }
+      }
+      else if(dir == 2) {
+        if (col < minfo_.cols && (minfo_.warehouse[col + 1][row] != WALL_CHAR && minfo_.warehouse[col + 1][row] != SHELF_CHAR)
+            && minfo_.warehouse[col + 1][row] != DOCK_CHAR && minfo_.visited[col + 1][row] == 0 && this->find_path(col + 1, row)) {
+          return true;
+        }
+      }
+      else if(dir == 1) {
+        if (row > 0 && (minfo_.warehouse[col][row - 1] != WALL_CHAR && minfo_.warehouse[col][row - 1] != SHELF_CHAR)
+            && minfo_.warehouse[col][row - 1] != DOCK_CHAR && minfo_.visited[col][row - 1] == 0 && this->find_path(col, row - 1)) {
+          return true;
+        }
+      }
+      else if(dir == 3) {
+        if (row < minfo_.rows && (minfo_.warehouse[col][row + 1] != WALL_CHAR && minfo_.warehouse[col][row + 1] != SHELF_CHAR)
+            && minfo_.warehouse[col][row + 1] != DOCK_CHAR && minfo_.visited[col][row + 1] == 0 && this->find_path(col, row + 1)) {
+          return true;
+        }
+      }
     }
 
     // Otherwise we need to backtrack and find another solution.
