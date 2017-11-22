@@ -21,8 +21,10 @@ public:
     std::vector<Coordinate> temp;
     while (true) {
       coordinates = order_queue.get();
+      std::cout << "Got orders" << std::endl;
       if(coordinates[1].col == 998 && coordinates[1].row == 998) break;
       trucks_semaphore.wait();
+      std::cout << "Got dock" << std::endl;
       if(coordinates[0].add) memory_->minfo.restock = 1;
       else memory_->minfo.deliver = 1;
       for(int i=0;i<coordinates.size();i+=2){
@@ -49,11 +51,11 @@ public:
     while (true) {
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
-        std::cout << "Order Monitor Running" << std::endl;
         if(memory_->quit) break;
         for(int j=0;j<MAX_WAREHOUSE_DOCKS;j++){
           for(int add=0;add<2;add++){
             if(memory_->minfo.order_status[add][j] == 0){
+              std::cout << "Delivery or restock done" << std::endl;
               memory_->minfo.order_status[add][j] = -1;
               memory_->minfo.done[add] = 1;
               done = true;

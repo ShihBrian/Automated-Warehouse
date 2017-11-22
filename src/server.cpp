@@ -51,6 +51,7 @@ private:
 
   void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
     std::vector<Coordinate> coordinates;
+    std::vector<Coordinate> temp;
     int order_id;
     std::cout << "Incoming orders" << std::endl;
     for(auto& order:Orders){
@@ -66,15 +67,15 @@ private:
       if (inv.check_stock(Orders)) {
         for (auto &order:Orders) {
           //list of coordinates the robot must visit in order to fulfil an order
-          coordinates = inv.get_coordinates(order,Orders.size(),order_id);
-          for(auto& coord:coordinates){
-            coord.product = order.product;
+          temp = inv.get_coordinates(order,Orders.size(),order_id);
+          for(auto& coord:temp){
             coord.add = add;
             coord.order_id = order_id;
+            coordinates.push_back(coord);
           }
-          order_queue.add(coordinates);
-          coordinates.clear();
         }
+        order_queue.add(coordinates);
+        coordinates.clear();
         inv.update_inv(Orders, add);
         Orders.clear();
         add = inv.check_threshold(Orders);
@@ -84,15 +85,16 @@ private:
     if(add){ //restocking
       for (auto &order:Orders) {
         //list of coordinates the robot must visit in order to fulfil an order
-        coordinates = inv.get_available_shelf(order,Orders.size(),order_id);
-        for(auto& coord:coordinates){
+        temp = inv.get_available_shelf(order,Orders.size(),order_id);
+        for(auto& coord:temp){
           coord.product = order.product;
           coord.add = add;
           coord.order_id = order_id;
+          coordinates.push_back(coord);
         }
-        order_queue.add(coordinates);
-        coordinates.clear();
       }
+      order_queue.add(coordinates);
+      coordinates.clear();
       inv.update_inv(Orders, add);
     }
   }
@@ -132,6 +134,7 @@ public:
       memory->minfo.order_status[1][i] = -1;
     }
     cpen333::process::semaphore dock_semaphore(DOCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
+    std::cout << "Docks: " << memory->minfo.num_docks << std::endl;
     cpen333::process::semaphore truck_semaphore(TRUCKS_SEMAPHORE_NAME, memory->minfo.num_docks);
 
     for (int i = 0; i < nrobots; ++i) {

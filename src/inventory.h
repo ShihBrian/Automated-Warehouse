@@ -146,7 +146,10 @@ class Inventory {
             if(order.quantity == 0) break;
           }
         }
-        memory_->minfo.order_status[1][id] += coordinates.size()/2 + 1;
+        if(memory_->minfo.order_status[1][id] == -1)
+          memory_->minfo.order_status[1][id] += coordinates.size()/2 + 1;
+        else
+          memory_->minfo.order_status[1][id] += coordinates.size()/2;
       }
       return coordinates;
     }
@@ -196,7 +199,10 @@ class Inventory {
       }
       {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
-        memory_->minfo.order_status[0][id] += coordinates.size()/2 + 1;
+        if(memory_->minfo.order_status[1][id] == -1)
+          memory_->minfo.order_status[1][id] += coordinates.size()/2 + 1;
+        else
+          memory_->minfo.order_status[1][id] += coordinates.size()/2;
       }
       return coordinates;
     }
