@@ -250,14 +250,13 @@ class Inventory {
       for(int i = 0; i<available_products.size();i++){
         if (available_products[i].product == product){
           available_products.erase(available_products.begin()+i);
-          total_inv.erase(product);
+          //total_inv.erase(product);
         }
       }
+    }
 
-      for(auto& shelf:shelves){
-        shelf.weight -= shelf.products[product]*weight;
-        shelf.products.erase(product);
-      }
+    int get_quantity(std::string product){
+      return total_inv[product];
     }
 
     void get_available_products(std::vector<Order_item>& products){

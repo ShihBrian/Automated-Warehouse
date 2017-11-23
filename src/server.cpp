@@ -226,6 +226,11 @@ public:
             comm.send_response(1, "Adding new product to inventory");
           } else if (remove_product) {
             remove_product = false;
+            int num = inv.get_quantity(Orders[0].product);
+            if(num) {
+              Orders[0].quantity = num;
+              handle_orders(Orders,inv,false);
+            }
             inv.remove_inv_item(Orders[0].product);
             comm.send_response(1, "Removing product from inventory");
           } else {

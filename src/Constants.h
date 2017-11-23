@@ -23,7 +23,7 @@
 
 #define DEFAULT_ROBOTS 3
 
-#define WAREHOUSE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\test_warehouse.txt"
+#define WAREHOUSE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\warehouse1.txt"
 #define TEST_WAREHOUSE_NAME "C:\\Users\\Brian\\CLionProjects\\Amazoom\\data\\test_warehouse.txt"
 
 #define SHELF_MAX_WEIGHT 100
