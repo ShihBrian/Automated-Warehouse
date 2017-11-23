@@ -255,10 +255,8 @@ class Inventory {
       }
 
       for(auto& shelf:shelves){
-        std::cout << "Weight" << weight << std::endl;
         shelf.weight -= shelf.products[product]*weight;
         shelf.products.erase(product);
-        std::cout << "Erasing item" << std::endl;
       }
     }
 

@@ -30,11 +30,13 @@ void testGetWeight(string product, int weight, Inventory& inv){
     throw TestException(msg);
   }
 }
-/*
+
 void testInvUpdate(bool add, Inventory& inv,vector<string> products,vector<int>quantity,vector<Order_item>& orders) {
   Order_item item;
   string msg = "testInvUpdate: ";
-  inv.update_inv(orders,add);
+  for(auto& i:orders){
+    inv.update_inv(i.product,i.quantity,add);
+  }
   orders.clear();
   inv.get_total_inv(orders);
   for(int i=0;i<orders.size();i++){
@@ -46,7 +48,7 @@ void testInvUpdate(bool add, Inventory& inv,vector<string> products,vector<int>q
   }
   orders.clear();
 }
-*/
+
 
 void testGetProducts(Inventory& inv, vector<string> expected_products){
   vector<Order_item> products;
@@ -73,16 +75,18 @@ void testModProducts(Inventory& inv,string product, int weight, vector<string> e
   testGetProducts(inv,expected_products);
 }
 
-/*
-void testGetShelfInfo(Inventory& inv, int col, int row, int quantity, string product, int weight){
-  Order_item order;
+
+void testGetShelfInfo(Inventory& inv, int col, int row, std::vector<int> quantity, std::vector<std::string> product, std::vector<int> weight){
+  std::vector<Order_item> order;
   order = inv.get_shelf_info(col,row);
-  if(order.product != product || order.weight != weight || order.quantity != quantity){
-    string msg = "Shelf info incorrect";
-    throw TestException(msg);
+  for(int i=0;i<order.size();i++) {
+    if(order[i].product != product[i] || order[i].weight != weight[i] || order[i].quantity != quantity[i]){
+      string msg = "Shelf info incorrect";
+      throw TestException(msg);
+    }
   }
 }
-*/
+
 
 void testRestock(Inventory& inv, Order_item order, vector<Coordinate> expected){
   vector<Coordinate> coordinates = inv.get_available_shelf(order, 0,0);
@@ -111,20 +115,10 @@ int main(){
   vector<Coordinate> coordinates;
   Coordinate coordinate;
   std::map<std::string,int> products;
-  char product[] = "Hello";
-  std::string test;
 
-  int count = 0;
-  while(product[count] != '\0'){
-    test.push_back(product[count]);
-    count++;
-  }
-  products[test] = 10;
-  std::printf("%s",test.c_str());
-  for(auto& prod:products){
-    std::printf("%s %d", prod.first.c_str(),prod.second);
-  }
-  /*
+  std::vector<std::string> prod;
+  std::vector<int> weight;
+  std::vector<int> quantity;
   try{
     //Add to inventory
     createItem("Apple",10,orders);
@@ -162,7 +156,10 @@ int main(){
     testRestock(inv,order,coordinates);
 
     //Get information about a shelf
-    testGetShelfInfo(inv, 2,2, 33, "Banana", 99);
+    quantity.push_back(33);
+    prod.push_back("Banana");
+    weight.push_back(99);
+    testGetShelfInfo(inv, 2,2, quantity, prod, weight);
 
     //Get location of shelf containing a product
     testFindProduct("Banana",2,2,inv);
@@ -171,7 +168,7 @@ int main(){
   }catch (TestException& exc) {
     std::cout << exc.what() << std::endl;
   }
-*/
+
 
 
 
