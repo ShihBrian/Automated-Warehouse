@@ -97,6 +97,10 @@ public:
   void shutdown(){
     comm.send_type(MSG_QUIT);
   }
+
+  void load_orders(std::vector<Order_item> new_orders){
+    Orders = new_orders;
+  }
 };
 
 #endif //MANAGER_H
