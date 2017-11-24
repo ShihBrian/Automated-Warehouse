@@ -262,6 +262,10 @@ class Robot : public cpen333::thread::thread_object {
     while (true) {
       orders = orders_.get();
       if (orders[0].row == 999 && orders[0].col == 999) {
+        std::cout << "Robot " << idx_ << " dying" << std::endl;
+        for (auto &order:orders) {
+          std::cout << order.product << " " << order.quantity << " " << order.col << " " << order.row << std::endl;
+        }
         memory_->rinfo.nrobot--;
         break;
       }
