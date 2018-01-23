@@ -50,7 +50,7 @@ private:
     order_queue.add(order);
   }
 
-  void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add) {
+  void handle_orders(std::vector<Order_item> Orders, Inventory& inv, bool add, bool remove) {
     std::vector<Coordinate> coordinates;
     std::vector<Coordinate> temp;
     int order_id;
@@ -79,7 +79,8 @@ private:
         coordinates.clear();
         temp_orders = Orders;
         Orders.clear();
-        add = inv.check_threshold(temp_orders, Orders);
+        if(!remove)
+          add = inv.check_threshold(temp_orders, Orders);
       }
       else std::cout << "Not enough stock" << std::endl;
     }
@@ -226,6 +227,11 @@ public:
             comm.send_response(1, "Adding new product to inventory");
           } else if (remove_product) {
             remove_product = false;
+            int num = inv.get_quantity(Orders[0].product);
+            if(num) {
+              Orders[0].quantity = num;
+              handle_orders(Orders,inv,false, true);
+            }
             inv.remove_inv_item(Orders[0].product);
             comm.send_response(1, "Removing product from inventory");
           } else {
@@ -236,7 +242,7 @@ public:
                 comm.send_response(0, "Not enough inventory to fulfill order");
             }
             try {
-              handle_orders(Orders, inv, add);
+              handle_orders(Orders, inv, add, false);
               comm.send_response(1, "Restocking truck arrived, unloading...");
             }
             catch(...){
@@ -310,7 +316,7 @@ public:
           temp_orders = Orders;
           Orders.clear();
           if (inv.check_threshold(temp_orders,Orders))
-            handle_orders(Orders, inv, true);
+            handle_orders(Orders, inv, true, false);
           state = STATE_START;
           break;
         case STATE_QUIT:
